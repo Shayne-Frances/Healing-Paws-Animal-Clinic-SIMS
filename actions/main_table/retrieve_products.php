@@ -6,8 +6,8 @@ $sql = "SELECT p.*, c.category_name
 
 $products_result = $conn->query($sql);
 
-// If the query fails, we can catch the error
 if (!$products_result) {
     die("Error retrieving products: " . $conn->error);
 }
+
 ?>

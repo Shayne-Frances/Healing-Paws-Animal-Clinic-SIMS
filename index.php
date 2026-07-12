@@ -1,13 +1,13 @@
 <?php
-include 'includes/db.php';
-include 'includes/header.php';
-include 'actions/main_table/retrieve_products.php';
+include __DIR__ . '/includes/db.php';
+include __DIR__ . '/includes/header.php';
+include __DIR__ . '/actions/main_table/retrieve_products.php';
 ?>
 
 <div class="row mt-4">
     <div class="col-12">
         <div class="product-section">
-            <h5 class="text-dark-blue font-heading fw-bold mb-3">🧴 All Products</h5>
+            <h5 class="text-dark-blue font-heading fw-bold mb-3">All Products</h5>
 
             <?php
             // Check if we actually have products in the database
