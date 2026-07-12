@@ -48,3 +48,29 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     max-height: 100px;
     max-width: 200px;
 }
+
+/* Product Row Column Widths */
+.hp-col-name { width: 30%; }
+.hp-col-size { width: 15%; }
+.hp-col-price { width: 15%; }
+.hp-col-stock { width: 20%; }
+.hp-col-category { width: 20%; }
+
+/* Image and Alert Styles */
+.hp-img-wrapper { 
+    width: 50px; 
+    height: 50px; 
+    overflow: hidden; 
+}
+.hp-img-cover { 
+    width: 50px; 
+    height: 50px; 
+    object-fit: cover; 
+}
+.hp-stock-alert { 
+    font-size: 0.75rem; 
+}
+.hp-badge-category { 
+    background-color: var(--light-blue-green); 
+    color: var(--dark-blue); 
+}
