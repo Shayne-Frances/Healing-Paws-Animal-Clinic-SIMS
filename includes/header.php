@@ -15,14 +15,16 @@
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="index.php">
-            <img src="/assets/images/website/HPAC (Logo + Wordmark).png" class="navbar-logo">
+    <div class="container-fluid d-flex justify-content-between align-items-end">
+        
+        <a class="navbar-brand m-0" href="index.php">
+            <img src="/assets/images/website/HPAC (Logo + Wordmark).png" class="navbar-logo" alt="Healing Paws Logo" style="max-height: 60px;">
         </a>
-    </div>
 
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold">Simple Inventory Management System</a>
+        <span class="text-dark-blue font-heading pb-1 fst-italic">
+            Simple Inventory Management System
+        </span>
+
     </div>
 </nav>
 
