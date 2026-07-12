@@ -1,0 +1,42 @@
+:root {
+    /* --- Colors --- */
+    --white: #FFFFFF;
+    --dark-blue: #072942;
+    --light-blue: #D9EEF4;
+    --pink: #DE5B6D;
+    --light-pink: #fbd7d9;
+    --yellow: #FEA94B;
+    --light-yellow: #FFEEDB;
+    --blue-green: #478BA2;
+    --light-blue-green: #A0CAD5;
+    --orange: #E9765B;
+    --light-orange: #F2A490;
+    --green: #46897D;
+    --light-green: #9BD8CD;
+
+    /* --- Typography --- */
+    --font-heading: 'Merriweather Sans', sans-serif;
+    --font-body: 'Merriweather', serif;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--light-blue);
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    font-family: var(--font-heading);
+}
+
+.hp-navbar {
+    background-color: var(--dark-blue);
+}
+
+.hp-navbar .navbar-brand {
+    color: var(--white) !important; 
+}
+
+.navbar-logo {
+    max-height: 150px;
+    max-width: 300px;
+}
