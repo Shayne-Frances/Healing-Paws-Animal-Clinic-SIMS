@@ -35,6 +35,12 @@ include __DIR__ . '/actions/main_table/retrieve_products.php';
                                 </div>
                             </div>
 
+                            <div class="d-flex align-items-center hp-col-name">
+                                <div class="ms-3">
+                                    <h6 class="mb-0 font-heading fw-bold fst-italic text-dark-blue"><?php echo htmlspecialchars($row['generic_name']); ?></h6>
+                                </div>
+                            </div>
+
                             <div class="text-center hp-col-size">
                                 <span class="badge rounded-pill bg-light text-dark px-3 py-2 border">
                                     <?php echo htmlspecialchars($row['size_volume']); ?>

@@ -74,3 +74,13 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     background-color: var(--light-blue-green); 
     color: var(--dark-blue); 
 }
+
+.hp-product-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.hp-product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+}
