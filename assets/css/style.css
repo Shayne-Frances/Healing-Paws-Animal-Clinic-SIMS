@@ -1,5 +1,7 @@
+/*******************************************************************************
+ * ============================ SYSTEM CONFIGURATION ===========================
+ ******************************************************************************/
 :root {
-    /* --- Colors --- */
     --white: #FFFFFF;
     --dark-blue: #072942;
     --light-blue: #D9EEF4;
@@ -13,43 +15,32 @@
     --light-orange: #F2A490;
     --green: #46897D;
     --light-green: #9BD8CD;
-
-    /* --- Typography --- */
     --font-heading: 'Merriweather Sans', sans-serif;
     --font-body: 'Merriweather', serif;
 }
 
-.text-dark-blue {
-    color: var(--dark-blue);
-}
+/*******************************************************************************
+ * ============================== BASE ELEMENTS ================================
+ ******************************************************************************/
+body { font-family: var(--font-body); background-color: var(--light-blue); }
+h1, h2, h3, h4, h5, h6, .navbar-brand { font-family: var(--font-heading); }
 
-.font-heading {
-    font-family: var(--font-heading);
-}
+/*******************************************************************************
+ * ============================ TYPOGRAPHY & UTILITIES =========================
+ ******************************************************************************/
+.text-dark-blue { color: var(--dark-blue); }
+.font-heading { font-family: var(--font-heading); }
 
-body {
-    font-family: var(--font-body);
-    background-color: var(--light-blue);
-}
+/*******************************************************************************
+ * =========================== NAVIGATION COMPONENT ============================
+ ******************************************************************************/
+.hp-navbar { background-color: var(--dark-blue); }
+.hp-navbar .navbar-brand { color: var(--white) !important; }
+.navbar-logo { max-height: 100px; max-width: 200px; }
 
-h1, h2, h3, h4, h5, h6, .navbar-brand {
-    font-family: var(--font-heading);
-}
-
-.hp-navbar {
-    background-color: var(--dark-blue);
-}
-
-.hp-navbar .navbar-brand {
-    color: var(--white) !important; 
-}
-
-.navbar-logo {
-    max-height: 100px;
-    max-width: 200px;
-}
-
-/* Product Row Column Widths */
+/*******************************************************************************
+ * ========================= INVENTORY GRID LAYOUT ============================
+ ******************************************************************************/
 .hp-col-brand { width: 22%; }
 .hp-col-generic { width: 18%; }
 .hp-col-size { width: 10%; }
@@ -57,59 +48,40 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
 .hp-col-stock { width: 15%; }
 .hp-col-category { width: 20%; }
 
-/* Image and Alert Styles */
-.hp-img-wrapper { 
-    width: 50px; 
-    height: 50px; 
-    overflow: hidden; 
-}
-.hp-img-cover { 
-    width: 50px; 
-    height: 50px; 
-    object-fit: cover; 
-}
-.hp-stock-alert { 
-    font-size: 0.75rem; 
-}
-.hp-badge-category { 
-    background-color: var(--light-blue-green); 
-    color: var(--dark-blue); 
-}
+/*******************************************************************************
+ * ========================= PRODUCT CARD COMPONENT ============================
+ ******************************************************************************/
+.hp-product-card { transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; }
+.hp-product-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important; }
+.hp-img-wrapper { width: 50px; height: 50px; overflow: hidden; }
+.hp-img-cover { width: 50px; height: 50px; object-fit: cover; }
+.hp-stock-alert { font-size: 0.75rem; }
+.hp-badge-category { background-color: var(--light-blue-green); color: var(--dark-blue); }
 
-.hp-product-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
-}
+/*******************************************************************************
+ * ============================ MODAL WINDOW THEME =============================
+ ******************************************************************************/
+.hp-modal-custom { border: 3px solid var(--dark-blue) !important; }
+.hp-modal-header-dark { background-color: var(--dark-blue) !important; }
+.hp-modal-header-dark .modal-title { color: #ffffff !important; }
 
-.hp-product-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
-}
+/*******************************************************************************
+ * ======================== FORM CONTROLS & STATES =============================
+ ******************************************************************************/
+.hp-form-label { color: var(--dark-blue) !important; font-weight: 700 !important; }
+.hp-paste-zone { border-style: dashed !important; min-height: 120px; cursor: pointer; }
+.hp-image-preview { max-height: 150px; object-fit: contain; }
 
-/* Healing Paws Modal Theme Modifications */
-.hp-modal-custom {
-    border: 3px solid var(--dark-blue) !important;
-}
-
-.hp-modal-header-dark {
-    background-color: var(--dark-blue) !important;
-}
-
-.hp-modal-header-dark .modal-title {
-    color: #ffffff !important;
-}
-
-/* Enforce Dark Blue Labels at all times */
-.hp-form-label {
-    color: var(--dark-blue) !important;
-    font-weight: 700 !important;
-}
-
-/* Dynamic Edit Mode Styling */
 .hp-edit-mode .form-control:not([disabled]), 
 .hp-edit-mode .form-select:not([disabled]),
 .hp-edit-mode #image_paste_zone {
-    background-color: #eef7ff !important; /* Soft light blue tint */
+    background-color: #eef7ff !important;
     border-color: #a4cfff !important;
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
+
+/*******************************************************************************
+ * ============================ INTERACTION BUTTONS ============================
+ ******************************************************************************/
+.hp-btn-edit { background-color: var(--light-blue-green) !important; color: var(--dark-blue) !important; }
+.hp-btn-submit { background-color: var(--dark-blue) !important; }

@@ -56,12 +56,13 @@
                         <div class="col-12">
                             <label class="form-label small hp-form-label">Product Image</label>
                             <input type="file" id="image_file" name="image_file" accept="image/*" class="d-none">
-                            <div id="image_paste_zone" class="border rounded-3 p-3 text-center bg-light position-relative" style="border-style: dashed !important; min-height: 120px; cursor: pointer;">
+                            
+                            <div id="image_paste_zone" class="border rounded-3 p-3 text-center bg-light position-relative hp-paste-zone">
                                 <div id="paste_zone_prompt" class="my-2">
                                     <span class="fs-3">📷</span>
                                     <p class="mb-0 small text-muted">Click to select, or click here and press <kbd>Ctrl + V</kbd> to paste an image</p>
                                 </div>
-                                <img id="image_preview" src="" class="img-fluid rounded d-none" style="max-height: 150px; object-fit: contain;">
+                                <img id="image_preview" src="" class="img-fluid rounded d-none hp-image-preview">
                             </div>
                         </div>
 
@@ -79,8 +80,8 @@
                 </div>
                 
                 <div class="modal-footer border-0 bg-light rounded-bottom-4 px-4 py-3 d-flex justify-content-end gap-2">
-                    <button type="button" id="btnModalEdit" class="btn font-heading px-4 py-2 rounded-3" style="background-color: var(--light-blue-green); color: var(--dark-blue);">Edit Product</button>
-                    <button type="submit" id="btnModalSubmit" class="btn font-heading px-4 py-2 rounded-3 text-white" style="background-color: var(--dark-blue);">Save Changes</button>
+                    <button type="button" id="btnModalEdit" class="btn font-heading px-4 py-2 rounded-3 hp-btn-edit">Edit Product</button>
+                    <button type="submit" id="btnModalSubmit" class="btn font-heading px-4 py-2 rounded-3 text-white hp-btn-submit">Save Changes</button>
                 </div>
             </form>
 
