@@ -7,7 +7,17 @@ include __DIR__ . '/actions/main_table/retrieve_products.php';
 <div class="row mt-4">
     <div class="col-12">
         <div class="product-section">
-            <h5 class="text-dark-blue font-heading fw-bold mb-3">All Products</h5>
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="text-dark-blue font-heading fw-bold mb-0">All Products</h5>
+                <button class="btn font-heading btn-sm px-3 py-2 rounded-3 text-white d-flex align-items-center gap-1" 
+                        style="background-color: var(--dark-blue);"
+                        data-bs-toggle="modal" 
+                        data-bs-target="#productModal" 
+                        id="btnAddNewProduct">
+                    ➕ Add Product
+                </button>
+            </div>
 
             <?php
             if ($products_result->num_rows > 0) {
@@ -24,10 +34,23 @@ include __DIR__ . '/actions/main_table/retrieve_products.php';
                     }
                     ?>
 
-                    <div class="card rounded-4 border-0 shadow-sm mb-3 hp-product-card">
+                    <div class="card rounded-4 border-0 shadow-sm mb-3 hp-product-card"
+                         data-bs-toggle="modal"
+                         data-bs-target="#productModal"
+                         data-id="<?php echo $row['product_id']; ?>"
+                         data-brand="<?php echo htmlspecialchars($row['brand_name']); ?>"
+                         data-generic="<?php echo htmlspecialchars($row['generic_name'] ?? ''); ?>"
+                         data-category="<?php echo $row['category_id']; ?>"
+                         data-size="<?php echo htmlspecialchars($row['size_volume']); ?>"
+                         data-price="<?php echo $row['unit_price']; ?>"
+                         data-stock="<?php echo $row['stock_quantity']; ?>"
+                         data-reorder="<?php echo $row['reorder_level']; ?>"
+                         data-picture="<?php echo htmlspecialchars($row['picture_link'] ?? ''); ?>"
+                         data-details="<?php echo htmlspecialchars($row['other_details'] ?? ''); ?>">
+                        
                         <div class="card-body d-flex align-items-center justify-content-between py-2 px-4">
                             
-                            <div class="d-flex align-items-center hp-col-name">
+                            <div class="d-flex align-items-center hp-col-brand">
                                 <?php echo $image_html; ?>
                                 <div class="ms-3">
                                     <h6 class="mb-0 font-heading fw-bold text-dark-blue"><?php echo htmlspecialchars($row['brand_name']); ?></h6>
@@ -35,9 +58,9 @@ include __DIR__ . '/actions/main_table/retrieve_products.php';
                                 </div>
                             </div>
 
-                            <div class="d-flex align-items-center hp-col-name">
-                                <div class="ms-3">
-                                    <h6 class="mb-0 font-heading fw-bold fst-italic text-dark-blue"><?php echo htmlspecialchars($row['generic_name']); ?></h6>
+                            <div class="d-flex align-items-center hp-col-generic">
+                                <div>
+                                    <h6 class="mb-0 font-heading fw-bold fst-italic text-secondary"><?php echo htmlspecialchars($row['generic_name'] ?? 'N/A'); ?></h6>
                                 </div>
                             </div>
 
@@ -78,5 +101,6 @@ include __DIR__ . '/actions/main_table/retrieve_products.php';
 </div>
 
 <?php 
-include 'includes/footer.php';
+include __DIR__ . '/includes/add_product_form.php';
+include __DIR__ . '/includes/footer.php';
 ?>

@@ -50,10 +50,11 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
 }
 
 /* Product Row Column Widths */
-.hp-col-name { width: 30%; }
-.hp-col-size { width: 15%; }
+.hp-col-brand { width: 22%; }
+.hp-col-generic { width: 18%; }
+.hp-col-size { width: 10%; }
 .hp-col-price { width: 15%; }
-.hp-col-stock { width: 20%; }
+.hp-col-stock { width: 15%; }
 .hp-col-category { width: 20%; }
 
 /* Image and Alert Styles */
