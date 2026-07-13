@@ -10,4 +10,7 @@ if (!$products_result) {
     die("Error retrieving products: " . $conn->error);
 }
 
+$categories_result = $conn->query("SELECT * FROM categories ORDER BY category_name ASC");
+?>
+
 ?>
