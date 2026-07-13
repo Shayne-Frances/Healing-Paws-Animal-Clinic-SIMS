@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', function () {
             form.action = 'actions/main_table/add_product.php';
             form.reset();
             
-            // Activate blue input backgrounds for fresh entry
             form.classList.add('hp-edit-mode');
+            zonePrompt.classList.remove('d-none'); // Show instructions in Add mode
             
             inputs.forEach(input => input.removeAttribute('disabled'));
             fileInput.removeAttribute('disabled');
@@ -77,9 +77,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             modalTitle.textContent = '🧴 View Product Details';
             form.action = 'actions/main_table/update_product.php';
-            
-            // Clean out edit colors for clean view-only observation
             form.classList.remove('hp-edit-mode');
+            
+            // Unconditionally hide action prompts in View mode
+            zonePrompt.classList.add('d-none'); 
             
             document.getElementById('product_id').value = triggerButton.getAttribute('data-id');
             document.getElementById('brand_name').value = triggerButton.getAttribute('data-brand');
@@ -96,7 +97,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (currentPic) {
                 imgPreview.src = currentPic;
                 imgPreview.classList.remove('d-none');
-                zonePrompt.classList.add('d-none');
+            } else {
+                imgPreview.classList.add('d-none');
             }
 
             inputs.forEach(input => input.setAttribute('disabled', 'true'));
@@ -104,6 +106,22 @@ document.addEventListener('DOMContentLoaded', function () {
             btnEdit.classList.remove('d-none');
             btnSubmit.classList.add('d-none');
         }
+    });
+
+    btnEdit.addEventListener('click', function () {
+        form.classList.add('hp-edit-mode');
+        
+        // If the product has no image preview, bring back the paste prompt now that we are editing
+        if (imgPreview.classList.contains('d-none') || !imgPreview.src) {
+            zonePrompt.classList.remove('d-none');
+        }
+        
+        inputs.forEach(input => input.removeAttribute('disabled'));
+        fileInput.removeAttribute('disabled');
+        modalTitle.textContent = '✏️ Edit Product Details';
+        btnEdit.classList.add('d-none');
+        btnSubmit.classList.remove('d-none');
+        btnSubmit.textContent = 'Save Changes';
     });
 
     btnEdit.addEventListener('click', function () {
