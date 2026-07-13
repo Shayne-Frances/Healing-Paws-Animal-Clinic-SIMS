@@ -6,13 +6,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnSubmit = document.getElementById('btnModalSubmit');
     const inputs = form.querySelectorAll('input, select');
 
-    // Clipboard Elements
     const pasteZone = document.getElementById('image_paste_zone');
     const fileInput = document.getElementById('image_file');
     const imgPreview = document.getElementById('image_preview');
     const zonePrompt = document.getElementById('paste_zone_prompt');
 
-    // Handle manual clicking to upload an image file
     pasteZone.addEventListener('click', () => {
         if (!fileInput.hasAttribute('disabled')) {
             fileInput.click();
@@ -25,21 +23,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Magic Copy/Paste Listener Engine
     pasteZone.addEventListener('paste', function (event) {
-        if (fileInput.hasAttribute('disabled')) return; // Blocks editing in View Mode
+        if (fileInput.hasAttribute('disabled')) return; 
 
         const clipboardItems = event.clipboardData.items;
         for (let i = 0; i < clipboardItems.length; i++) {
             if (clipboardItems[i].type.indexOf('image') !== -1) {
                 const imageBlob = clipboardItems[i].getAsFile();
-                
-                // 1. Force the file seamlessly into our hidden file input element 
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(imageBlob);
                 fileInput.files = dataTransfer.files;
-
-                // 2. Fire up the layout preview render
                 displayPreview(imageBlob);
                 event.preventDefault();
                 break;
@@ -64,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
         zonePrompt.classList.remove('d-none');
     }
 
-    // Modal State Logic Integration
     productModal.addEventListener('show.bs.modal', function (event) {
         const triggerButton = event.relatedTarget;
         resetImageZone();
@@ -74,6 +66,9 @@ document.addEventListener('DOMContentLoaded', function () {
             form.action = 'actions/main_table/add_product.php';
             form.reset();
             
+            // Activate blue input backgrounds for fresh entry
+            form.classList.add('hp-edit-mode');
+            
             inputs.forEach(input => input.removeAttribute('disabled'));
             fileInput.removeAttribute('disabled');
             btnEdit.classList.add('d-none');
@@ -82,6 +77,9 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             modalTitle.textContent = '🧴 View Product Details';
             form.action = 'actions/main_table/update_product.php';
+            
+            // Clean out edit colors for clean view-only observation
+            form.classList.remove('hp-edit-mode');
             
             document.getElementById('product_id').value = triggerButton.getAttribute('data-id');
             document.getElementById('brand_name').value = triggerButton.getAttribute('data-brand');
@@ -94,7 +92,6 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('picture_link').value = triggerButton.getAttribute('data-picture');
             document.getElementById('other_details').value = triggerButton.getAttribute('data-details');
             
-            // Handle image display if existing item has one
             const currentPic = triggerButton.getAttribute('data-picture');
             if (currentPic) {
                 imgPreview.src = currentPic;
@@ -110,6 +107,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     btnEdit.addEventListener('click', function () {
+        // Unleash the light blue input boxes on click!
+        form.classList.add('hp-edit-mode');
+        
         inputs.forEach(input => input.removeAttribute('disabled'));
         fileInput.removeAttribute('disabled');
         modalTitle.textContent = '✏️ Edit Product Details';

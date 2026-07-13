@@ -85,3 +85,31 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     transform: translateY(-2px);
     box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
 }
+
+/* Healing Paws Modal Theme Modifications */
+.hp-modal-custom {
+    border: 3px solid var(--dark-blue) !important;
+}
+
+.hp-modal-header-dark {
+    background-color: var(--dark-blue) !important;
+}
+
+.hp-modal-header-dark .modal-title {
+    color: #ffffff !important;
+}
+
+/* Enforce Dark Blue Labels at all times */
+.hp-form-label {
+    color: var(--dark-blue) !important;
+    font-weight: 700 !important;
+}
+
+/* Dynamic Edit Mode Styling */
+.hp-edit-mode .form-control:not([disabled]), 
+.hp-edit-mode .form-select:not([disabled]),
+.hp-edit-mode #image_paste_zone {
+    background-color: #eef7ff !important; /* Soft light blue tint */
+    border-color: #a4cfff !important;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
