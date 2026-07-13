@@ -12,5 +12,3 @@ if (!$products_result) {
 
 $categories_result = $conn->query("SELECT * FROM categories ORDER BY category_name ASC");
 ?>
-
-?>

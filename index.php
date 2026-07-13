@@ -15,7 +15,7 @@ include __DIR__ . '/actions/main_table/retrieve_products.php';
                         data-bs-toggle="modal" 
                         data-bs-target="#productModal" 
                         id="btnAddNewProduct">
-                    ➕ Add Product
+                    +
                 </button>
             </div>
 
@@ -60,7 +60,7 @@ include __DIR__ . '/actions/main_table/retrieve_products.php';
 
                             <div class="d-flex align-items-center hp-col-generic">
                                 <div>
-                                    <h6 class="mb-0 font-heading fw-bold fst-italic text-secondary"><?php echo htmlspecialchars($row['generic_name'] ?? 'N/A'); ?></h6>
+                                    <h6 class="mb-0 font-heading fw-bold fst-italic text-secondary"><?php echo htmlspecialchars($row['generic_name'] ?? ''); ?></h6>
                                 </div>
                             </div>
 
