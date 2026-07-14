@@ -124,18 +124,6 @@ document.addEventListener('DOMContentLoaded', function () {
         btnSubmit.textContent = 'Save Changes';
     });
 
-    btnEdit.addEventListener('click', function () {
-        // Unleash the light blue input boxes on click!
-        form.classList.add('hp-edit-mode');
-        
-        inputs.forEach(input => input.removeAttribute('disabled'));
-        fileInput.removeAttribute('disabled');
-        modalTitle.textContent = '✏️ Edit Product Details';
-        btnEdit.classList.add('d-none');
-        btnSubmit.classList.remove('d-none');
-        btnSubmit.textContent = 'Save Changes';
-    });
-
     // --- MODE SWITCHER LOGIC ---
     const modePills = document.querySelectorAll('.hp-pill');
     const bodyEl = document.body;
@@ -176,19 +164,21 @@ document.addEventListener('DOMContentLoaded', function () {
         bodyEl.classList.remove('hp-panel-open');
     });
 
-
-    // --- SEARCH AND SORT LOGIC ---
+    // --- SEARCH, FILTER, AND SORT LOGIC ---
     const searchBar = document.getElementById('productSearchBar');
     const sortOptions = document.querySelectorAll('[data-sort]');
+    const catOptions = document.querySelectorAll('.hp-cat-option');
+    const catFilterBtn = document.getElementById('categoryFilterBtn');
     const gridContainer = document.getElementById('productGridContainer');
     
     let currentSearch = '';
     let currentSort = 'name'; // Default sorting
+    let currentCategory = ''; // Track active category filtration rules
     let searchDebounceTimer;
 
     // Core function to fetch updated views from database
     function fetchFilteredProducts() {
-        const url = `actions/main_table/search_sort_products.php?search=${encodeURIComponent(currentSearch)}&sort=${encodeURIComponent(currentSort)}`;
+        const url = `actions/main_table/search_sort_products.php?search=${encodeURIComponent(currentSearch)}&sort=${encodeURIComponent(currentSort)}&category=${encodeURIComponent(currentCategory)}`;
         
         fetch(url)
             .then(response => response.text())
@@ -214,8 +204,19 @@ document.addEventListener('DOMContentLoaded', function () {
         option.addEventListener('click', function(e) {
             e.preventDefault();
             currentSort = this.getAttribute('data-sort');
+            fetchFilteredProducts();
+        });
+    });
+
+    // Category Selector Listener Event Block
+    catOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentCategory = this.getAttribute('data-category');
             
-            // Highlight active selection optionally or just trigger update
+            // UI Quality of Life: Swaps button label text to the active category name
+            catFilterBtn.textContent = this.textContent;
+            
             fetchFilteredProducts();
         });
     });

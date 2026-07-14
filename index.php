@@ -3,6 +3,7 @@ include __DIR__ . '/includes/db.php';
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/actions/main_table/retrieve_products.php';
 include __DIR__ . '/actions/sales_log/retrieve_sales.php';
+include __DIR__ . '/actions/categories/retrieve_categories.php';
 ?>
 
 <div class="hp-main-wrapper" id="mainLayoutWrapper">

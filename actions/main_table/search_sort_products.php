@@ -3,8 +3,8 @@ include __DIR__ . '/../../includes/db.php';
 
 $search = $_GET['search'] ?? '';
 $sort = $_GET['sort'] ?? 'name';
+$category = $_GET['category'] ?? '';
 
-// Strict white-list mapping to prevent SQL Injection
 $order_by = "p.brand_name ASC";
 if ($sort === 'price_low') {
     $order_by = "p.unit_price ASC";
@@ -16,17 +16,30 @@ if ($sort === 'price_low') {
 
 $query = "SELECT p.*, c.category_name 
           FROM products p
-          LEFT JOIN categories c ON p.category_id = c.category_id";
+          LEFT JOIN categories c ON p.category_id = c.category_id 
+          WHERE 1=1";
 
+// Append Category Filter if selected
+if (!empty($category)) {
+    $query .= " AND p.category_id = ? ";
+}
+
+// Append Search parameters
 if (!empty($search)) {
-    $query .= " WHERE p.brand_name LIKE ? OR p.generic_name LIKE ?";
+    $query .= " AND (p.brand_name LIKE ? OR p.generic_name LIKE ?)";
 }
 
 $query .= " ORDER BY " . $order_by;
 
 $stmt = $conn->prepare($query);
 
-if (!empty($search)) {
+// Handle dynamic bind assignments based on what active states exist
+if (!empty($category) && !empty($search)) {
+    $search_param = "%" . $search . "%";
+    $stmt->bind_param("iss", $category, $search_param, $search_param);
+} elseif (!empty($category)) {
+    $stmt->bind_param("i", $category);
+} elseif (!empty($search)) {
     $search_param = "%" . $search . "%";
     $stmt->bind_param("ss", $search_param, $search_param);
 }
