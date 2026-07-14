@@ -10,19 +10,17 @@ if (!empty($row['picture_link'])) {
 }
 ?>
 
-<div class="card rounded-4 border-0 shadow-sm mb-3 hp-product-card"
-     data-bs-toggle="modal"
-     data-bs-target="#productModal"
+<div class="card mb-3 shadow-sm hp-product-card rounded-4 border-0" 
      data-id="<?php echo $row['product_id']; ?>"
      data-brand="<?php echo htmlspecialchars($row['brand_name']); ?>"
-     data-generic="<?php echo htmlspecialchars($row['generic_name'] ?? ''); ?>"
+     data-generic="<?php echo htmlspecialchars($row['generic_name']); ?>"
      data-category="<?php echo $row['category_id']; ?>"
      data-size="<?php echo htmlspecialchars($row['size_volume']); ?>"
      data-price="<?php echo $row['unit_price']; ?>"
      data-stock="<?php echo $row['stock_quantity']; ?>"
      data-reorder="<?php echo $row['reorder_level']; ?>"
-     data-picture="<?php echo htmlspecialchars($row['picture_link'] ?? ''); ?>"
-     data-details="<?php echo htmlspecialchars($row['other_details'] ?? ''); ?>">
+     data-picture="<?php echo htmlspecialchars($row['picture_link']); ?>"
+     data-details="<?php echo htmlspecialchars($row['other_details']); ?>">
     
     <div class="card-body d-flex align-items-center justify-content-between py-2 px-4">
         <div class="d-flex align-items-center hp-col-brand">

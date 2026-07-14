@@ -183,3 +183,48 @@ body.hp-mode-edit .hp-product-select-wrapper {
     cursor: pointer;
     border: 2px solid #cbd5e1;
 }
+
+/* --- CLINIC THEMED BULK BUTTONS --- */
+
+/* Bulk Delete Button - Styled with Clinic Pink */
+.hp-btn-pink {
+    background-color: var(--pink) !important;
+    color: var(--white) !important;
+    font-family: var(--font-heading) !important;
+    border: none;
+    transition: filter 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.hp-btn-pink:hover {
+    /* Smoothly darkens the clinic pink without needing hardcoded hex values */
+    filter: brightness(90%); 
+}
+
+.hp-btn-pink:active {
+    transform: scale(0.98);
+}
+
+/* Bulk Group Button - Styled with Clinic Dark Blue */
+.hp-btn-dark-blue {
+    background-color: var(--dark-blue) !important;
+    color: var(--white) !important;
+    font-family: var(--font-heading) !important;
+    border: none;
+    transition: filter 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.hp-btn-dark-blue:hover {
+    /* Smoothly brightens the dark blue for a nice interactive hover highlight */
+    filter: brightness(120%); 
+}
+
+.hp-btn-dark-blue:active {
+    transform: scale(0.98);
+}
+
+/* --- STATE AND POINTER CONTROLS --- */
+
+/* Only show the clinical pointer cursor when card interactions are valid */
+body.hp-mode-view .hp-product-card {
+    cursor: pointer;
+}

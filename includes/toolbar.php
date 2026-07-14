@@ -3,10 +3,10 @@
     <!-- Left: Title & Add Button -->
     <div class="d-flex align-items-center gap-3 hp-toolbar-side">
         <h5 class="text-dark-blue font-heading fw-bold mb-0">All Products</h5>
-        <button class="btn btn-danger btn-sm px-3 py-2 rounded-3 text-white font-heading d-none" id="btnBulkDelete">
-        🗑️ Delete
+        <button class="btn font-heading btn-sm px-3 py-2 rounded-3 d-none hp-btn-pink" id="btnBulkDelete">
+            🗑️ Delete
         </button>
-        <button class="btn btn-primary btn-sm px-3 py-2 rounded-3 text-white font-heading d-none" id="btnBulkGroup">
+        <button class="btn font-heading btn-sm px-3 py-2 rounded-3 d-none hp-btn-dark-blue" id="btnBulkGroup">
             📦 Group
         </button>
         <button class="btn font-heading btn-sm px-3 py-2 rounded-3 text-white hp-btn-add d-flex align-items-center justify-content-center" 
