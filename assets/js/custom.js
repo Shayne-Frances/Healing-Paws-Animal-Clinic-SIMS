@@ -135,4 +135,44 @@ document.addEventListener('DOMContentLoaded', function () {
         btnSubmit.classList.remove('d-none');
         btnSubmit.textContent = 'Save Changes';
     });
+
+    // --- MODE SWITCHER LOGIC ---
+    const modePills = document.querySelectorAll('.hp-pill');
+    const bodyEl = document.body;
+
+    modePills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            // Remove active class from all pills
+            modePills.forEach(p => p.classList.remove('active'));
+            // Add active class to clicked pill
+            this.classList.add('active');
+
+            // Handle Background Changes
+            const selectedMode = this.getAttribute('data-mode');
+            
+            // Clean slate
+            bodyEl.classList.remove('hp-mode-view', 'hp-mode-sale', 'hp-mode-edit');
+
+            // Apply selected background mode
+            if (selectedMode === 'sale') {
+                bodyEl.classList.add('hp-mode-sale');
+            } else if (selectedMode === 'edit') {
+                bodyEl.classList.add('hp-mode-edit');
+            } else {
+                bodyEl.classList.add('hp-mode-view');
+            }
+        });
+    });
+
+    // --- SALES LOG SIDE PANEL LOGIC ---
+    const btnToggleLog = document.getElementById('toggleSalesLogBtn');
+    const btnCloseLog = document.getElementById('closeSalesLogBtn');
+
+    btnToggleLog.addEventListener('click', () => {
+        bodyEl.classList.toggle('hp-panel-open');
+    });
+
+    btnCloseLog.addEventListener('click', () => {
+        bodyEl.classList.remove('hp-panel-open');
+    });
 });

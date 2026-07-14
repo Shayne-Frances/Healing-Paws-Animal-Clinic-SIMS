@@ -85,3 +85,68 @@ h1, h2, h3, h4, h5, h6, .navbar-brand { font-family: var(--font-heading); }
  ******************************************************************************/
 .hp-btn-edit { background-color: var(--light-blue-green) !important; color: var(--dark-blue) !important; }
 .hp-btn-submit { background-color: var(--dark-blue) !important; }
+
+/*******************************************************************************
+ * ======================= LAYER 1: STATE MODE SWITCHER ========================
+ ******************************************************************************/
+/* Smooth background transitions for the whole app */
+body { transition: background-color 0.4s ease; }
+
+.hp-mode-view { background-color: var(--light-blue) !important; }
+.hp-mode-sale { background-color: var(--light-yellow) !important; }
+.hp-mode-edit { background-color: var(--light-pink) !important; }
+
+/* The Pill Container & Buttons */
+.hp-mode-pills { padding: 4px; border: 1px solid rgba(0,0,0,0.05); }
+.hp-pill { 
+    font-family: var(--font-heading); 
+    font-weight: bold; 
+    color: var(--dark-blue); 
+    border: none;
+    transition: all 0.3s ease;
+}
+
+/* Active Pill Colors */
+.hp-pill-view.active { background-color: var(--light-blue-green); color: var(--dark-blue); }
+.hp-pill-sale.active { background-color: var(--yellow); color: var(--white); }
+.hp-pill-edit.active { background-color: var(--pink); color: var(--white); }
+
+/*******************************************************************************
+ * ========================== LAYER 2: TOP TOOLBAR =============================
+ ******************************************************************************/
+ /* Layout Balance Fixes for Toolbar */
+.hp-toolbar-side { flex: 1; }
+.hp-toolbar-center { flex: 2; display: flex; justify-content: center; }
+
+.hp-search-bar { max-width: 300px; border-color: #dee2e6; }
+.hp-btn-add { background-color: var(--dark-blue); }
+.hp-btn-log { background-color: var(--white); color: var(--dark-blue); font-weight: bold; font-family: var(--font-heading); }
+.hp-btn-plus { width: 40px; height: 40px; font-size: 1.2rem; }
+
+/*******************************************************************************
+ * ==================== SIDE PANEL (SALES LOG) & LAYOUT SHIFT ==================
+ ******************************************************************************/
+.hp-main-wrapper {
+    transition: padding-right 0.3s ease;
+    width: 100%;
+}
+
+/* The hidden right-hand drawer */
+.hp-side-panel {
+    position: fixed;
+    top: 0;
+    right: -400px; /* Hidden off-screen by default */
+    width: 400px;
+    height: 100vh;
+    background-color: var(--white);
+    transition: right 0.3s ease;
+    z-index: 1050;
+    overflow-y: auto;
+}
+
+/* When the panel is open, push the wrapper to the left and slide panel in */
+body.hp-panel-open .hp-main-wrapper { padding-right: 400px; }
+body.hp-panel-open .hp-side-panel { right: 0; }
+
+.hp-log-list .hp-log-item { border-bottom: 1px solid #f0f0f0; }
+.hp-log-list .hp-log-item:last-child { border-bottom: none; }
