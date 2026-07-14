@@ -175,4 +175,48 @@ document.addEventListener('DOMContentLoaded', function () {
     btnCloseLog.addEventListener('click', () => {
         bodyEl.classList.remove('hp-panel-open');
     });
+
+
+    // --- SEARCH AND SORT LOGIC ---
+    const searchBar = document.getElementById('productSearchBar');
+    const sortOptions = document.querySelectorAll('[data-sort]');
+    const gridContainer = document.getElementById('productGridContainer');
+    
+    let currentSearch = '';
+    let currentSort = 'name'; // Default sorting
+    let searchDebounceTimer;
+
+    // Core function to fetch updated views from database
+    function fetchFilteredProducts() {
+        const url = `actions/main_table/search_sort_products.php?search=${encodeURIComponent(currentSearch)}&sort=${encodeURIComponent(currentSort)}`;
+        
+        fetch(url)
+            .then(response => response.text())
+            .then(htmlContent => {
+                gridContainer.innerHTML = htmlContent;
+            })
+            .catch(err => console.error('Error filtering products:', err));
+    }
+
+    // Dynamic Search Typing Listener
+    searchBar.addEventListener('input', function() {
+        currentSearch = this.value;
+        
+        // Wait 300ms after user stops typing before calling backend
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+            fetchFilteredProducts();
+        }, 300);
+    });
+
+    // Sort Dropdown Option Listener
+    sortOptions.forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentSort = this.getAttribute('data-sort');
+            
+            // Highlight active selection optionally or just trigger update
+            fetchFilteredProducts();
+        });
+    });
 });
