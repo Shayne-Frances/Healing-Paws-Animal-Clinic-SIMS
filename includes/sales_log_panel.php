@@ -7,28 +7,32 @@
         </div>
 
         <div class="d-flex justify-content-between px-2 mb-2 small fw-bold text-secondary text-uppercase border-bottom pb-2">
-            <span style="width: 15%;">No.</span>
-            <span style="width: 25%;">Sale ID</span>
-            <span style="width: 30%;">Time</span>
-            <span style="width: 30%; text-align: right;">Total</span>
+            <span class="hp-col-log-no">No.</span>
+            <span class="hp-col-log-id">Sale ID</span>
+            <span class="hp-col-log-time">Time</span>
+            <span class="hp-col-log-total">Total</span>
         </div>
 
         <div class="flex-grow-1 overflow-auto pe-2 hp-log-list mt-2">
-            
-            <div class="d-flex justify-content-between align-items-center py-3 hp-log-item px-2">
-                <span class="fw-bold text-dark-blue" style="width: 15%;">01</span>
-                <span class="text-muted small" style="width: 25%;">#8992A</span>
-                <span class="text-muted small" style="width: 30%;">10:45 AM</span>
-                <span class="fw-bold text-dark-blue font-heading" style="width: 30%; text-align: right;">₱ 850.00</span>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center py-3 hp-log-item px-2">
-                <span class="fw-bold text-dark-blue" style="width: 15%;">02</span>
-                <span class="text-muted small" style="width: 25%;">#8993B</span>
-                <span class="text-muted small" style="width: 30%;">1:15 PM</span>
-                <span class="fw-bold text-dark-blue font-heading" style="width: 30%; text-align: right;">₱ 1,200.00</span>
-            </div>
-
+            <?php
+            if (isset($sales_result) && $sales_result->num_rows > 0) {
+                $counter = 1;
+                while ($sale = $sales_result->fetch_assoc()) {
+                    $padded_counter = str_pad($counter, 2, '0', STR_PAD_LEFT);
+                    ?>
+                    <div class="d-flex justify-content-between align-items-center py-3 hp-log-item px-2">
+                        <span class="fw-bold text-dark-blue hp-col-log-no"><?php echo $padded_counter; ?></span>
+                        <span class="text-muted small hp-col-log-id">#<?php echo htmlspecialchars($sale['sales_id']); ?></span>
+                        <span class="text-muted small hp-col-log-time"><?php echo $sale['sale_time']; ?></span>
+                        <span class="fw-bold text-dark-blue font-heading hp-col-log-total">₱<?php echo number_format($sale['total_amount'], 2); ?></span>
+                    </div>
+                    <?php
+                    $counter++;
+                }
+            } else {
+                echo '<div class="text-center text-muted small py-4">No sales records logged today.</div>';
+            }
+            ?>
         </div>
 
     </div>

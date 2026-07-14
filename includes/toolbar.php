@@ -11,7 +11,7 @@
     </div>
 
     <div class="d-flex align-items-center gap-2 hp-toolbar-center">
-        <input type="text" class="form-control rounded-pill hp-search-bar px-4 py-2 shadow-sm" id="productSearchBar" placeholder="🔍 Search generic or brand name...">
+        <input type="text" class="form-control rounded-pill hp-search-bar px-4 py-2 shadow-sm" id="productSearchBar" placeholder="🔍 Search...">
         
         <div class="dropdown">
             <button class="btn bg-white rounded-pill border shadow-sm dropdown-toggle px-3 py-2 font-heading text-dark-blue" type="button" data-bs-toggle="dropdown">

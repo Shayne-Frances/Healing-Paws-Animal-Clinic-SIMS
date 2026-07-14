@@ -150,3 +150,9 @@ body.hp-panel-open .hp-side-panel { right: 0; }
 
 .hp-log-list .hp-log-item { border-bottom: 1px solid #f0f0f0; }
 .hp-log-list .hp-log-item:last-child { border-bottom: none; }
+
+/* Sales Log Column Grid Balancers */
+.hp-col-log-no { width: 15%; }
+.hp-col-log-id { width: 25%; }
+.hp-col-log-time { width: 30%; }
+.hp-col-log-total { width: 30%; text-align: right; }
