@@ -156,3 +156,30 @@ body.hp-panel-open .hp-side-panel { right: 0; }
 .hp-col-log-id { width: 25%; }
 .hp-col-log-time { width: 30%; }
 .hp-col-log-total { width: 30%; text-align: right; }
+
+/* --- EDIT MODE STATE CONTROLS --- */
+
+/* Automatically hide the Add button when not in View Mode */
+body.hp-mode-sale #btnAddNewProduct,
+body.hp-mode-edit #btnAddNewProduct {
+    display: none !important;
+}
+
+/* Checkbox positioning and state toggles */
+.hp-product-select-wrapper {
+    display: none;
+    margin-right: 1rem;
+}
+
+/* Force checkboxes into layout only when Edit mode is active */
+body.hp-mode-edit .hp-product-select-wrapper {
+    display: block;
+}
+
+/* Custom styling for custom checkbox bullets */
+.hp-product-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    border: 2px solid #cbd5e1;
+}

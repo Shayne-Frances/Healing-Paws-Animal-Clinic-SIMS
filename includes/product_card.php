@@ -26,6 +26,10 @@ if (!empty($row['picture_link'])) {
     
     <div class="card-body d-flex align-items-center justify-content-between py-2 px-4">
         <div class="d-flex align-items-center hp-col-brand">
+
+            <div class="hp-product-select-wrapper">
+                <input type="checkbox" class="form-check-input rounded-circle hp-product-checkbox shadow-sm">
+            </div>
             <?php echo $image_html; ?>
             <div class="ms-3">
                 <h6 class="mb-0 font-heading fw-bold text-dark-blue"><?php echo htmlspecialchars($row['brand_name']); ?></h6>

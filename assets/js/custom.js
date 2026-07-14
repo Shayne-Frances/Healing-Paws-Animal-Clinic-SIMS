@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+    // --- INITIALIZATION & CORE VARIABLES ---
     const productModal = document.getElementById('productModal');
     const form = document.getElementById('mainProductForm');
     const modalTitle = document.getElementById('productModalLabel');
@@ -11,6 +12,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const imgPreview = document.getElementById('image_preview');
     const zonePrompt = document.getElementById('paste_zone_prompt');
 
+    const searchBar = document.getElementById('productSearchBar');
+    const sortOptions = document.querySelectorAll('[data-sort]');
+    const catOptions = document.querySelectorAll('.hp-cat-option');
+    const catFilterBtn = document.getElementById('categoryFilterBtn');
+    const gridContainer = document.getElementById('productGridContainer');
+
+    const modePills = document.querySelectorAll('.hp-pill');
+    const bodyEl = document.body;
+
+    const btnToggleLog = document.getElementById('toggleSalesLogBtn');
+    const btnCloseLog = document.getElementById('closeSalesLogBtn');
+
+    let currentSearch = '';
+    let currentSort = 'name'; 
+    let currentCategory = ''; 
+    let searchDebounceTimer;
+
+    // --- IMAGE PASTE & PREVIEW ENGINE ---
     pasteZone.addEventListener('click', () => {
         if (!fileInput.hasAttribute('disabled')) {
             fileInput.click();
@@ -57,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
         zonePrompt.classList.remove('d-none');
     }
 
+    // --- PRODUCT MODAL CONTROLS ---
     productModal.addEventListener('show.bs.modal', function (event) {
         const triggerButton = event.relatedTarget;
         resetImageZone();
@@ -67,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
             form.reset();
             
             form.classList.add('hp-edit-mode');
-            zonePrompt.classList.remove('d-none'); // Show instructions in Add mode
+            zonePrompt.classList.remove('d-none'); 
             
             inputs.forEach(input => input.removeAttribute('disabled'));
             fileInput.removeAttribute('disabled');
@@ -79,7 +99,6 @@ document.addEventListener('DOMContentLoaded', function () {
             form.action = 'actions/main_table/update_product.php';
             form.classList.remove('hp-edit-mode');
             
-            // Unconditionally hide action prompts in View mode
             zonePrompt.classList.add('d-none'); 
             
             document.getElementById('product_id').value = triggerButton.getAttribute('data-id');
@@ -111,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function () {
     btnEdit.addEventListener('click', function () {
         form.classList.add('hp-edit-mode');
         
-        // If the product has no image preview, bring back the paste prompt now that we are editing
         if (imgPreview.classList.contains('d-none') || !imgPreview.src) {
             zonePrompt.classList.remove('d-none');
         }
@@ -124,24 +142,58 @@ document.addEventListener('DOMContentLoaded', function () {
         btnSubmit.textContent = 'Save Changes';
     });
 
-    // --- MODE SWITCHER LOGIC ---
-    const modePills = document.querySelectorAll('.hp-pill');
-    const bodyEl = document.body;
+    // --- BULK SELECTION ENGINE (EDIT MODE) ---
+    function updateBulkActionButtons() {
+        const checkedCount = document.querySelectorAll('.hp-product-checkbox:checked').length;
+        const btnDelete = document.getElementById('btnBulkDelete');
+        const btnGroup = document.getElementById('btnBulkGroup');
 
+        if (!btnDelete || !btnGroup) return;
+
+        if (checkedCount === 1) {
+            btnDelete.classList.remove('d-none');
+            btnGroup.classList.add('d-none');
+        } else if (checkedCount >= 2) {
+            btnDelete.classList.remove('d-none');
+            btnGroup.classList.remove('d-none');
+        } else {
+            btnDelete.classList.add('d-none');
+            btnGroup.classList.add('d-none');
+        }
+    }
+
+    gridContainer.addEventListener('change', function(e) {
+        if (e.target.classList.contains('hp-product-checkbox')) {
+            updateBulkActionButtons();
+        }
+    });
+
+    gridContainer.addEventListener('click', function(e) {
+        if (bodyEl.classList.contains('hp-mode-edit')) {
+            const card = e.target.closest('.hp-product-card');
+            if (card) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const checkbox = card.querySelector('.hp-product-checkbox');
+                if (checkbox && e.target !== checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                }
+                updateBulkActionButtons();
+            }
+        }
+    }, true);
+
+    // --- SYSTEM MODE SWITCHER ---
     modePills.forEach(pill => {
         pill.addEventListener('click', function() {
-            // Remove active class from all pills
             modePills.forEach(p => p.classList.remove('active'));
-            // Add active class to clicked pill
             this.classList.add('active');
 
-            // Handle Background Changes
             const selectedMode = this.getAttribute('data-mode');
             
-            // Clean slate
             bodyEl.classList.remove('hp-mode-view', 'hp-mode-sale', 'hp-mode-edit');
 
-            // Apply selected background mode
             if (selectedMode === 'sale') {
                 bodyEl.classList.add('hp-mode-sale');
             } else if (selectedMode === 'edit') {
@@ -149,13 +201,15 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 bodyEl.classList.add('hp-mode-view');
             }
+
+            if (selectedMode !== 'edit') {
+                document.querySelectorAll('.hp-product-checkbox').forEach(cb => cb.checked = false);
+                updateBulkActionButtons();
+            }
         });
     });
 
-    // --- SALES LOG SIDE PANEL LOGIC ---
-    const btnToggleLog = document.getElementById('toggleSalesLogBtn');
-    const btnCloseLog = document.getElementById('closeSalesLogBtn');
-
+    // --- SALES LOG SIDE PANEL CONTROLS ---
     btnToggleLog.addEventListener('click', () => {
         bodyEl.classList.toggle('hp-panel-open');
     });
@@ -164,19 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
         bodyEl.classList.remove('hp-panel-open');
     });
 
-    // --- SEARCH, FILTER, AND SORT LOGIC ---
-    const searchBar = document.getElementById('productSearchBar');
-    const sortOptions = document.querySelectorAll('[data-sort]');
-    const catOptions = document.querySelectorAll('.hp-cat-option');
-    const catFilterBtn = document.getElementById('categoryFilterBtn');
-    const gridContainer = document.getElementById('productGridContainer');
-    
-    let currentSearch = '';
-    let currentSort = 'name'; // Default sorting
-    let currentCategory = ''; // Track active category filtration rules
-    let searchDebounceTimer;
-
-    // Core function to fetch updated views from database
+    // --- SEARCH, FILTER, AND SORT ENGINE ---
     function fetchFilteredProducts() {
         const url = `actions/main_table/search_sort_products.php?search=${encodeURIComponent(currentSearch)}&sort=${encodeURIComponent(currentSort)}&category=${encodeURIComponent(currentCategory)}`;
         
@@ -184,22 +226,20 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.text())
             .then(htmlContent => {
                 gridContainer.innerHTML = htmlContent;
+                updateBulkActionButtons();
             })
             .catch(err => console.error('Error filtering products:', err));
     }
 
-    // Dynamic Search Typing Listener
     searchBar.addEventListener('input', function() {
         currentSearch = this.value;
         
-        // Wait 300ms after user stops typing before calling backend
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
             fetchFilteredProducts();
         }, 300);
     });
 
-    // Sort Dropdown Option Listener
     sortOptions.forEach(option => {
         option.addEventListener('click', function(e) {
             e.preventDefault();
@@ -208,15 +248,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Category Selector Listener Event Block
     catOptions.forEach(option => {
         option.addEventListener('click', function(e) {
             e.preventDefault();
             currentCategory = this.getAttribute('data-category');
-            
-            // UI Quality of Life: Swaps button label text to the active category name
             catFilterBtn.textContent = this.textContent;
-            
             fetchFilteredProducts();
         });
     });
