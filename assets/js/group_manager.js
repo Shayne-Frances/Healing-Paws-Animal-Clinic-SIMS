@@ -1,4 +1,4 @@
-// js/group_manager.js
+// assets/js/group_manager.js
 document.addEventListener('DOMContentLoaded', function () {
     const groupModalElement = document.getElementById('groupManagementModal');
     const groupModal = groupModalElement ? new bootstrap.Modal(groupModalElement) : null;
@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchResults = document.getElementById('modalGroupProductSearchResults');
     const btnSaveGroup = document.getElementById('btnSaveGroupStructuralModifications');
 
+    // Local State to keep track of added/removed products without writing to DB instantly
+    let currentGroupItems = [];
     let searchDebounceTimer;
 
     // --- DELEGATE FOLDER INTERACTION ACTIONS ---
@@ -19,10 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const groupCard = e.target.closest('.hp-group-card');
         if (!groupCard) return; 
 
-        // If we are in Edit Mode, let the main checkbox script handle interactions instead
         if (bodyEl.classList.contains('hp-mode-edit')) return;
-
-        // GUARD: If clicking an individual product INSIDE the folder, let custom.js open the product modal!
         if (e.target.closest('.hp-product-card')) return;
 
         const groupId = groupCard.getAttribute('data-group-id');
@@ -34,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const isArrowClick = e.target.closest('.hp-dropdown-arrow');
 
-        // ESCAPE HATCH: If user clicks the ▼ arrow, ALWAYS just toggle the folder open/close
         if (isArrowClick) {
             e.stopPropagation();
             if (nestedContainer) {
@@ -49,9 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // SMART CLICK LOGIC: If user clicked the rest of the header...
         if (isExpanded) {
-            // STAGE 2: Folder is already open -> Launch Modal!
             e.stopPropagation();
             const groupTitleEl = groupCard.querySelector('.hp-group-title');
             const titleText = groupTitleEl ? groupTitleEl.textContent.trim() : 'Group';
@@ -59,10 +55,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (groupModal) {
                 launchGroupManagementConsole(groupId, titleText);
             } else {
-                alert("Error: The Modal HTML is missing! Please ensure group_management_modal.php is included correctly in index.php.");
+                alert("Error: The Modal HTML is missing!");
             }
         } else {
-            // STAGE 1: Folder is closed -> Expand it!
             if (nestedContainer) {
                 nestedContainer.classList.remove('d-none');
                 groupCard.setAttribute('data-expanded', 'true');
@@ -78,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
         inputGroupName.value = currentGroupName;
         searchInput.value = '';
         searchResults.classList.add('d-none');
-        pillsContainer.innerHTML = '<div class="text-muted font-heading small py-2">Loading directory configurations...</div>';
+        pillsContainer.innerHTML = '<div class="text-muted font-heading small py-2 text-center w-100">Loading configurations...</div>';
         
         groupModal.show();
         fetchLinkedGroupItems(groupId);
@@ -89,20 +84,22 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    renderLinkedGroupPills(data.items);
+                    currentGroupItems = data.items; // Initialize the batch array with existing DB records
+                    renderLinkedGroupPills(currentGroupItems);
                 } else {
                     pillsContainer.innerHTML = `<div class="text-danger font-heading small">Load Error: ${data.error}</div>`;
                 }
             })
             .catch(err => {
-                console.error('Core configuration sync error:', err);
+                console.error(err);
                 pillsContainer.innerHTML = '<div class="text-danger font-heading small">Connection mapping timeout.</div>';
             });
     }
 
-    function renderLinkedGroupPills(items) {
+    // --- RENDER DRAFT PILLS WITH TRANSITION SUPPORT ---
+    function renderLinkedGroupPills(items, animateProductId = null) {
         if (items.length === 0) {
-            pillsContainer.innerHTML = '<div class="text-muted font-heading small w-100 py-2">Empty Folder. No active items linked.</div>';
+            pillsContainer.innerHTML = '<div class="text-muted font-heading small w-100 py-3 text-center">Empty Folder. No active items linked.</div>';
             return;
         }
 
@@ -111,51 +108,52 @@ document.addEventListener('DOMContentLoaded', function () {
             const pill = document.createElement('div');
             pill.className = 'hp-mini-product-pill d-flex align-items-center justify-content-between px-3 py-1.5 rounded-pill shadow-sm border bg-white';
             pill.style.minWidth = '45%';
+            
+            // Base Transition Styling
+            pill.style.transition = 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)'; // Bouncy entry animation
+            
+            // If this is the product we just added, start it off small and invisible
+            if (animateProductId && String(item.product_id) === String(animateProductId)) {
+                pill.style.opacity = '0';
+                pill.style.transform = 'scale(0.4) translateY(-10px)';
+            }
+
             pill.innerHTML = `
                 <span class="fw-bold truncate text-dark-blue me-2" style="font-size:0.85rem;">${item.brand_name}</span>
                 <button type="button" class="btn-close ms-auto hp-remove-nested-item-btn" data-item-id="${item.product_id}" style="font-size:0.65rem; padding:0.25rem;"></button>
             `;
             pillsContainer.appendChild(pill);
+
+            // Trigger visual "pop" entry effect on next frame
+            if (animateProductId && String(item.product_id) === String(animateProductId)) {
+                setTimeout(() => {
+                    pill.style.opacity = '1';
+                    pill.style.transform = 'scale(1) translateY(0)';
+                }, 50);
+            }
         });
     }
 
-    // --- SYSTEM DISCONNECTION (UNGROUP) EVENT ---
+    // --- FRONT-END DISCONNECTION (UNGROUP) ANIMATION ---
     if (pillsContainer) {
         pillsContainer.addEventListener('click', function(e) {
             const removeBtn = e.target.closest('.hp-remove-nested-item-btn');
             if (!removeBtn) return;
 
             const productId = removeBtn.getAttribute('data-item-id');
-            const groupId = inputGroupId.value;
+            const pillElement = removeBtn.closest('.hp-mini-product-pill');
 
-            if (confirm("Disconnect item layout map link from this container folder?")) {
-                fetch('actions/main_table/remove_product_from_group.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ group_id: groupId, product_id: productId })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        const pillElement = removeBtn.closest('.hp-mini-product-pill');
-                        
-                        // Add smooth CSS animation directly via JS
-                        pillElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                        pillElement.style.opacity = '0';
-                        pillElement.style.transform = 'scale(0.8)';
-                        
-                        // Wait for the 300ms animation to finish before deleting it from the DOM
-                        setTimeout(() => {
-                            pillElement.remove();
-                            if (pillsContainer.children.length === 0) {
-                                pillsContainer.innerHTML = '<div class="text-muted font-heading small w-100 py-2">Empty Folder. No active items linked.</div>';
-                            }
-                            document.dispatchEvent(new CustomEvent('products-updated'));
-                        }, 300);
-                    } else {
-                        alert('Unlink failure: ' + data.error);
-                    }
-                });
+            if (pillElement) {
+                // Drop and fade-out transition!
+                pillElement.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0, 1, 1), transform 0.35s cubic-bezier(0.4, 0, 1, 1)';
+                pillElement.style.transform = 'translateY(25px) scale(0.8)'; // Slide down and shrink out of the box
+                pillElement.style.opacity = '0';
+
+                // Wait for the dropping animation to complete, then update local state
+                setTimeout(() => {
+                    currentGroupItems = currentGroupItems.filter(item => String(item.product_id) !== String(productId));
+                    renderLinkedGroupPills(currentGroupItems);
+                }, 300);
             }
         });
     }
@@ -183,14 +181,26 @@ document.addEventListener('DOMContentLoaded', function () {
                             searchResults.classList.remove('d-none');
                         }
                     })
-                    .catch(err => console.error('Unassigned item lookup failed:', err));
+                    .catch(err => console.error('Lookup failed:', err));
             }, 250);
         });
     }
 
     function renderSearchResults(items) {
         searchResults.innerHTML = '';
-        items.forEach(item => {
+        
+        // Safety Check: Filter out items we have already temporarily added in this modal session
+        const filteredItems = items.filter(item => 
+            !currentGroupItems.some(curr => String(curr.product_id) === String(item.product_id))
+        );
+
+        if (filteredItems.length === 0) {
+            searchResults.innerHTML = '<div class="p-2 text-muted small">No unassigned items found</div>';
+            searchResults.classList.remove('d-none');
+            return;
+        }
+
+        filteredItems.forEach(item => {
             const row = document.createElement('div');
             row.className = 'p-2 border-bottom hp-search-result-row d-flex justify-content-between align-items-center';
             row.style.cursor = 'pointer';
@@ -203,60 +213,82 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
             
             row.addEventListener('click', () => {
-                addItemToGroup(item.product_id);
+                addItemToGroup(item);
             });
             searchResults.appendChild(row);
         });
         searchResults.classList.remove('d-none');
     }
 
-    function addItemToGroup(productId) {
-        const groupId = inputGroupId.value;
+    // Temporarily add a product to the draft array state
+    function addItemToGroup(item) {
+        if (currentGroupItems.some(curr => String(curr.product_id) === String(item.product_id))) {
+            return;
+        }
 
-        fetch('actions/main_table/add_product_to_group.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ group_id: groupId, product_id: productId })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                searchInput.value = '';
-                searchResults.classList.add('d-none');
-                fetchLinkedGroupItems(groupId);
-                document.dispatchEvent(new CustomEvent('products-updated'));
-            } else {
-                alert('Assoc connection addition error: ' + data.error);
-            }
+        currentGroupItems.push({
+            product_id: item.product_id,
+            brand_name: item.brand_name,
+            generic_name: item.generic_name || ''
         });
+
+        // Re-render and visually bounce the newly added item in
+        renderLinkedGroupPills(currentGroupItems, item.product_id);
+
+        // Reset search field
+        searchInput.value = '';
+        searchResults.classList.add('d-none');
     }
 
-    // --- SAVE RE-NAME METADATA ---
+    // --- BATCH SAVE ACTIONS (DATABASE SAVING TIMING) ---
     if (btnSaveGroup) {
         btnSaveGroup.addEventListener('click', function() {
             const groupId = inputGroupId.value;
             const targetNameString = inputGroupName.value.trim();
 
-            if (!targetNameString) return;
+            if (!targetNameString) {
+                alert('Please provide a folder display name.');
+                return;
+            }
 
-            fetch('actions/main_table/update_group_meta.php', {
+            // Map out only the product IDs from our temporary state array
+            const productIds = currentGroupItems.map(item => item.product_id);
+
+            btnSaveGroup.disabled = true;
+            btnSaveGroup.textContent = 'Saving Changes...';
+
+            fetch('actions/main_table/update_group.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ group_id: groupId, group_name: targetNameString })
+                body: JSON.stringify({ 
+                    group_id: groupId, 
+                    group_name: targetNameString,
+                    product_ids: productIds 
+                })
             })
             .then(res => res.json())
             .then(data => {
+                btnSaveGroup.disabled = false;
+                btnSaveGroup.textContent = 'Save Changes';
+                
                 if (data.success) {
                     if (groupModal) groupModal.hide();
+                    // Dispatch change event to cleanly reload your inventory layout dynamically
                     document.dispatchEvent(new CustomEvent('products-updated'));
                 } else {
-                    alert('Meta modification rejection error: ' + data.error);
+                    alert('Save failure: ' + data.error);
                 }
+            })
+            .catch(err => {
+                btnSaveGroup.disabled = false;
+                btnSaveGroup.textContent = 'Save Changes';
+                console.error(err);
+                alert('Connection failure updating group configurations.');
             });
         });
     }
 
-    // Hide search results if user clicks away
+    // Hide search results dropdown when clicking outside
     document.addEventListener('click', function(e) {
         if (searchResults && !searchResults.contains(e.target) && e.target !== searchInput) {
             searchResults.classList.add('d-none');
