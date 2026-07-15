@@ -1,16 +1,27 @@
 <?php
+// Evaluate stock status
+$is_out_of_stock = ($row['stock_quantity'] <= 0);
+$card_classes = "card mb-3 shadow-sm hp-product-card rounded-4 border-0";
+$pointer_events = "";
+
 $stock_alert = "";
-if ($row['stock_quantity'] <= $row['reorder_level']) {
-    $stock_alert = '<div class="text-danger mt-1 hp-stock-alert">⚠️ Low Stock!</div>';
+if ($is_out_of_stock) {
+    // Apply styling and disable interactions for zero stock
+    $card_classes .= " opacity-50 bg-light";
+    $pointer_events = 'style="pointer-events: none;"';
+    $stock_alert = '<div class="text-danger mt-1 hp-stock-alert fw-bold">Out of Stock!</div>';
+} elseif ($row['stock_quantity'] <= $row['reorder_level']) {
+    $stock_alert = '<div class="text-warning mt-1 hp-stock-alert">⚠️ Low Stock!</div>';
 }
 
+// Generate image rendering block
 $image_html = '<div class="rounded-3 bg-light d-flex align-items-center justify-content-center hp-img-wrapper"><span class="fs-4">🧼</span></div>';
 if (!empty($row['picture_link'])) {
     $image_html = '<img src="' . htmlspecialchars($row['picture_link']) . '" class="rounded-3 hp-img-cover">';
 }
 ?>
 
-<div class="card mb-3 shadow-sm hp-product-card rounded-4 border-0" 
+<div class="<?php echo $card_classes; ?>" 
      data-id="<?php echo $row['product_id']; ?>"
      data-brand="<?php echo htmlspecialchars($row['brand_name']); ?>"
      data-generic="<?php echo htmlspecialchars($row['generic_name']); ?>"
@@ -20,7 +31,8 @@ if (!empty($row['picture_link'])) {
      data-stock="<?php echo $row['stock_quantity']; ?>"
      data-reorder="<?php echo $row['reorder_level']; ?>"
      data-picture="<?php echo htmlspecialchars($row['picture_link']); ?>"
-     data-details="<?php echo htmlspecialchars($row['other_details']); ?>">
+     data-details="<?php echo htmlspecialchars($row['other_details']); ?>"
+     <?php echo $pointer_events; ?>>
     
     <div class="card-body d-flex align-items-center justify-content-between py-2 px-4">
         <div class="d-flex align-items-center hp-col-brand">
@@ -44,7 +56,7 @@ if (!empty($row['picture_link'])) {
             <span class="fw-bold text-dark-blue font-heading">₱<?php echo number_format($row['unit_price'], 2); ?></span>
         </div>
         <div class="text-center hp-col-stock">
-            <span class="fw-bold"><?php echo $row['stock_quantity']; ?> pcs left</span>
+            <span class="fw-bold" id="stock-visual-<?php echo $row['product_id']; ?>"><?php echo $row['stock_quantity']; ?> pcs left</span>
             <?php echo $stock_alert; ?>
         </div>
         <div class="text-end hp-col-category">

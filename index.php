@@ -33,5 +33,7 @@ include __DIR__ . '/actions/categories/retrieve_categories.php';
 include __DIR__ . '/includes/sales_log_panel.php';
 include __DIR__ . '/includes/add_product_form.php';
 include __DIR__ . '/includes/group_management_modal.php';
+include __DIR__ . '/includes/toast_notification.php';
+include __DIR__ . '/includes/paper_bag.php';
 include __DIR__ . '/includes/footer.php';
 ?>
