@@ -35,10 +35,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentCategory = ''; 
     let searchDebounceTimer;
 
-    // --- DECUPLED CUSTOM EVENTS LISTENER ---
-    // Listens for structural changes made inside separate group manager scripts
-    document.addEventListener('products-updated', fetchFilteredProducts);
-
     // --- IMAGE PASTE & PREVIEW ENGINE ---
     pasteZone.addEventListener('click', () => {
         if (!fileInput.hasAttribute('disabled')) {
@@ -319,6 +315,10 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(err => console.error('Error filtering products:', err));
     }
+
+    // --- DECUPLED CUSTOM EVENTS LISTENER ---
+    // Moved safely below the function definition to prevent initialization crash
+    document.addEventListener('products-updated', fetchFilteredProducts);
 
     if (toggleGroupsBtn) {
         toggleGroupsBtn.addEventListener('change', fetchFilteredProducts);

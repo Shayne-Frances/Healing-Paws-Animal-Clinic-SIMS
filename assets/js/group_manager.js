@@ -21,6 +21,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // If we are in Edit Mode, let the main checkbox script handle interactions instead
         if (bodyEl.classList.contains('hp-mode-edit')) return;
+        
+        // --- NEW GUARD: Fixes Click Overlap Bug ---
+        // If the user specifically clicked a product card INSIDE the group, 
+        // ignore the folder toggle and let custom.js open the product modal!
+        if (e.target.closest('.hp-product-card')) return;
 
         const groupId = groupCard.getAttribute('data-group-id');
         const nestedContainer = document.getElementById(`nested-group-${groupId}`);
