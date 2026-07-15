@@ -19,7 +19,7 @@
 
     <!-- Center: Search, Filter, & Sort -->
     <div class="d-flex align-items-center gap-2 hp-toolbar-center">
-        <input type="text" class="form-control rounded-pill hp-search-bar px-4 py-2 shadow-sm" id="productSearchBar" placeholder="🔍 Search generic or brand name...">
+        <input type="text" class="form-control rounded-pill hp-search-bar px-4 py-2 shadow-sm" id="productSearchBar" placeholder="🔍 Search...">
         
         <!-- Category Filter Dropdown -->
         <div class="dropdown">
