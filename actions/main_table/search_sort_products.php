@@ -4,7 +4,7 @@ include __DIR__ . '/../../includes/db.php';
 $search = $_GET['search'] ?? '';
 $sort = $_GET['sort'] ?? 'name';
 $category = $_GET['category'] ?? '';
-// NEW: Catch the toggle state from the frontend (defaults to true)
+// Catch the toggle state from the frontend (defaults to true)
 $show_groups = $_GET['show_groups'] ?? 'true'; 
 
 // Establish sorting rules
@@ -28,6 +28,9 @@ if (empty($category) && $show_groups === 'true') {
     if ($group_result) {
         while ($group = $group_result->fetch_assoc()) {
             $group_id = $group['group_id'];
+            
+            // Extract the group_name so it is available for group_card.php
+            $group_name = $group['group_name']; 
 
             $child_query = "SELECT p.*, c.category_name 
                             FROM products p 

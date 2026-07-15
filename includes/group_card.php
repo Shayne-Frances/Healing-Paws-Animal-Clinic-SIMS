@@ -1,4 +1,7 @@
-<div class="card mb-2 shadow-sm hp-group-card rounded-4 border-0" data-group-id="<?php echo $group_id; ?>" data-expanded="false">
+<div class="card mb-2 shadow-sm hp-group-card rounded-4 border-0" 
+     data-group-id="<?php echo $group_id; ?>" 
+     data-group-name="<?php echo htmlspecialchars($group_name ?? 'New Group'); ?>" data-expanded="false">
+    
     <div class="card-body d-flex align-items-center justify-content-between py-3 px-4">
         
         <div class="d-flex align-items-center">

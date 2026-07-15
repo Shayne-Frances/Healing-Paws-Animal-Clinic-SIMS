@@ -1,10 +1,12 @@
 // assets/js/group_manager.js
+
 document.addEventListener('DOMContentLoaded', function () {
+    // --- DOM ELEMENT CACHE ---
     const groupModalElement = document.getElementById('groupManagementModal');
     const groupModal = groupModalElement ? new bootstrap.Modal(groupModalElement) : null;
     const bodyEl = document.body;
 
-    // Modal Specific Element Cache
+    // --- MODAL SPECIFIC ELEMENT CACHE ---
     const inputGroupId = document.getElementById('manage_group_id');
     const inputGroupName = document.getElementById('manage_group_name');
     const pillsContainer = document.getElementById('groupPillsTargetContainer');
@@ -12,15 +14,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchResults = document.getElementById('modalGroupProductSearchResults');
     const btnSaveGroup = document.getElementById('btnSaveGroupStructuralModifications');
 
-    // Local State to keep track of added/removed products without writing to DB instantly
+    // --- LOCAL STATE MANAGEMENT ---
+    // Keeps track of added/removed products without writing to DB instantly
     let currentGroupItems = [];
     let searchDebounceTimer;
 
-    // --- DELEGATE FOLDER INTERACTION ACTIONS ---
+    // --- EVENT DELEGATION: FOLDER INTERACTIONS ---
     document.addEventListener('click', function(e) {
         const groupCard = e.target.closest('.hp-group-card');
         if (!groupCard) return; 
 
+        // Prevent interaction if in edit mode or clicking a nested product
         if (bodyEl.classList.contains('hp-mode-edit')) return;
         if (e.target.closest('.hp-product-card')) return;
 
@@ -33,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const isArrowClick = e.target.closest('.hp-dropdown-arrow');
 
+        // Handle Expand/Collapse Arrow Click
         if (isArrowClick) {
             e.stopPropagation();
             if (nestedContainer) {
@@ -47,10 +52,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        // Handle Folder Body Click (Open Modal or Expand)
         if (isExpanded) {
             e.stopPropagation();
-            const groupTitleEl = groupCard.querySelector('.hp-group-title');
-            const titleText = groupTitleEl ? groupTitleEl.textContent.trim() : 'Group';
+            
+            // Read clean group name directly from the dataset attribute
+            const titleText = groupCard.getAttribute('data-group-name') || 'Group';
             
             if (groupModal) {
                 launchGroupManagementConsole(groupId, titleText);
@@ -69,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function launchGroupManagementConsole(groupId, currentGroupName) {
         if (!inputGroupId || !inputGroupName || !pillsContainer || !searchInput || !searchResults) return;
 
+        // Reset and populate modal fields
         inputGroupId.value = groupId;
         inputGroupName.value = currentGroupName;
         searchInput.value = '';
@@ -79,12 +87,13 @@ document.addEventListener('DOMContentLoaded', function () {
         fetchLinkedGroupItems(groupId);
     }
 
+    // Fetch existing mappings from the database
     function fetchLinkedGroupItems(groupId) {
         fetch(`actions/main_table/get_group_items.php?group_id=${groupId}`)
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    currentGroupItems = data.items; // Initialize the batch array with existing DB records
+                    currentGroupItems = data.items;
                     renderLinkedGroupPills(currentGroupItems);
                 } else {
                     pillsContainer.innerHTML = `<div class="text-danger font-heading small">Load Error: ${data.error}</div>`;
@@ -109,10 +118,10 @@ document.addEventListener('DOMContentLoaded', function () {
             pill.className = 'hp-mini-product-pill d-flex align-items-center justify-content-between px-3 py-1.5 rounded-pill shadow-sm border bg-white';
             pill.style.minWidth = '45%';
             
-            // Base Transition Styling
-            pill.style.transition = 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)'; // Bouncy entry animation
+            // Base Transition Styling (Bouncy entry animation)
+            pill.style.transition = 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)'; 
             
-            // If this is the product we just added, start it off small and invisible
+            // Initial animation state for newly added items
             if (animateProductId && String(item.product_id) === String(animateProductId)) {
                 pill.style.opacity = '0';
                 pill.style.transform = 'scale(0.4) translateY(-10px)';
@@ -124,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
             pillsContainer.appendChild(pill);
 
-            // Trigger visual "pop" entry effect on next frame
+            // Trigger visual pop entry effect on next frame
             if (animateProductId && String(item.product_id) === String(animateProductId)) {
                 setTimeout(() => {
                     pill.style.opacity = '1';
@@ -144,12 +153,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const pillElement = removeBtn.closest('.hp-mini-product-pill');
 
             if (pillElement) {
-                // Drop and fade-out transition!
+                // Drop and fade-out transition
                 pillElement.style.transition = 'opacity 0.35s cubic-bezier(0.4, 0, 1, 1), transform 0.35s cubic-bezier(0.4, 0, 1, 1)';
-                pillElement.style.transform = 'translateY(25px) scale(0.8)'; // Slide down and shrink out of the box
+                pillElement.style.transform = 'translateY(25px) scale(0.8)';
                 pillElement.style.opacity = '0';
 
-                // Wait for the dropping animation to complete, then update local state
+                // Wait for animation completion, then update local state
                 setTimeout(() => {
                     currentGroupItems = currentGroupItems.filter(item => String(item.product_id) !== String(productId));
                     renderLinkedGroupPills(currentGroupItems);
@@ -189,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderSearchResults(items) {
         searchResults.innerHTML = '';
         
-        // Safety Check: Filter out items we have already temporarily added in this modal session
+        // Safety Check: Filter out items already temporarily added in this modal session
         const filteredItems = items.filter(item => 
             !currentGroupItems.some(curr => String(curr.product_id) === String(item.product_id))
         );
@@ -242,7 +251,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- BATCH SAVE ACTIONS (DATABASE SAVING TIMING) ---
     if (btnSaveGroup) {
-        btnSaveGroup.addEventListener('click', function() {
+        btnSaveGroup.addEventListener('click', function(e) { // Fixed: added parameter 'e' here
+            e.preventDefault();
+            
             const groupId = inputGroupId.value;
             const targetNameString = inputGroupName.value.trim();
 
@@ -251,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // Map out only the product IDs from our temporary state array
+            // Map out only the product IDs from the temporary state array
             const productIds = currentGroupItems.map(item => item.product_id);
 
             btnSaveGroup.disabled = true;
@@ -273,7 +284,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 if (data.success) {
                     if (groupModal) groupModal.hide();
-                    // Dispatch change event to cleanly reload your inventory layout dynamically
+                    
+                    const activeCard = document.body.querySelector(`.hp-group-card[data-group-id="${groupId}"]`);
+                    if (activeCard) {
+                        const titleEl = activeCard.querySelector('.hp-group-title');
+                        if (titleEl) {
+                            titleEl.textContent = targetNameString; 
+                        }
+                        // Keep data attribute synced with the new text to prevent reverting on next click
+                        activeCard.setAttribute('data-group-name', targetNameString);
+                    }
+                    
+                    // Dispatch change event to trigger UI refresh listeners safely
                     document.dispatchEvent(new CustomEvent('products-updated'));
                 } else {
                     alert('Save failure: ' + data.error);
@@ -288,7 +310,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Hide search results dropdown when clicking outside
+    // --- EXTERNAL UI BEHAVIOR ---
+    // Hide search results dropdown when clicking outside of it
     document.addEventListener('click', function(e) {
         if (searchResults && !searchResults.contains(e.target) && e.target !== searchInput) {
             searchResults.classList.add('d-none');

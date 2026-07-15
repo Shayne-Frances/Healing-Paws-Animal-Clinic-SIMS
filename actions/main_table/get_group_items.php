@@ -1,7 +1,6 @@
 <?php
 // actions/main_table/get_group_items.php
 
-// Tell the browser we are sending JSON data back, not HTML
 header('Content-Type: application/json');
 
 // Include your database connection

@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="hp-mode-view">
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
     <div class="container-fluid d-flex justify-content-between align-items-end">
