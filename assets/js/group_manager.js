@@ -24,8 +24,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const groupCard = e.target.closest('.hp-group-card');
         if (!groupCard) return; 
 
-        // Prevent interaction if in edit mode or clicking a nested product
-        if (bodyEl.classList.contains('hp-mode-edit')) return;
+        // 1. Check for the arrow click FIRST
+        const isArrowClick = e.target.closest('.hp-dropdown-arrow');
+
+        // 2. Prevent interaction in edit mode UNLESS they clicked the arrow
+        if (bodyEl.classList.contains('hp-mode-edit') && !isArrowClick) return;
+        
+        // 3. Prevent interaction if clicking a nested product
         if (e.target.closest('.hp-product-card')) return;
 
         const groupId = groupCard.getAttribute('data-group-id');
@@ -34,8 +39,6 @@ document.addEventListener('DOMContentLoaded', function () {
         
         const cardHeader = e.target.closest('.card-body');
         if (!cardHeader) return;
-
-        const isArrowClick = e.target.closest('.hp-dropdown-arrow');
 
         // Handle Expand/Collapse Arrow Click
         if (isArrowClick) {
