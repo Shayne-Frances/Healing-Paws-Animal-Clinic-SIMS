@@ -22,7 +22,7 @@
 /*******************************************************************************
  * ============================== BASE ELEMENTS ================================
  ******************************************************************************/
-body { font-family: var(--font-body); background-color: var(--light-blue); }
+body { font-family: var(--font-body); background-color: var(--light-blue); transition: background-color 0.4s ease; }
 h1, h2, h3, h4, h5, h6, .navbar-brand { font-family: var(--font-heading); }
 
 /*******************************************************************************
@@ -51,8 +51,14 @@ h1, h2, h3, h4, h5, h6, .navbar-brand { font-family: var(--font-heading); }
 /*******************************************************************************
  * ========================= PRODUCT CARD COMPONENT ============================
  ******************************************************************************/
-.hp-product-card { transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; }
-.hp-product-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important; }
+.hp-product-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+.hp-product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+}
 .hp-img-wrapper { width: 50px; height: 50px; overflow: hidden; }
 .hp-img-cover { width: 50px; height: 50px; object-fit: cover; }
 .hp-stock-alert { font-size: 0.75rem; }
@@ -64,6 +70,7 @@ h1, h2, h3, h4, h5, h6, .navbar-brand { font-family: var(--font-heading); }
 .hp-modal-custom { border: 3px solid var(--dark-blue) !important; }
 .hp-modal-header-dark { background-color: var(--dark-blue) !important; }
 .hp-modal-header-dark .modal-title { color: #ffffff !important; }
+.hp-modal-pills-scroll { max-height: 150px; overflow-y: auto; }
 
 /*******************************************************************************
  * ======================== FORM CONTROLS & STATES =============================
@@ -73,7 +80,7 @@ h1, h2, h3, h4, h5, h6, .navbar-brand { font-family: var(--font-heading); }
 .hp-image-preview { max-height: 150px; object-fit: contain; }
 
 .hp-edit-mode .form-control:not([disabled]), 
-.hp-edit-mode .form-select:not([disabled]),
+.hp-edit-mode .form-select:not([disabled]), 
 .hp-edit-mode #image_paste_zone {
     background-color: #eef7ff !important;
     border-color: #a4cfff !important;
@@ -86,27 +93,41 @@ h1, h2, h3, h4, h5, h6, .navbar-brand { font-family: var(--font-heading); }
 .hp-btn-edit { background-color: var(--light-blue-green) !important; color: var(--dark-blue) !important; }
 .hp-btn-submit { background-color: var(--dark-blue) !important; }
 
+.hp-btn-pink {
+    background-color: var(--pink) !important;
+    color: var(--white) !important;
+    font-family: var(--font-heading) !important;
+    border: none;
+    transition: filter 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+.hp-btn-pink:hover { filter: brightness(90%); }
+.hp-btn-pink:active { transform: scale(0.98); }
+
+.hp-btn-dark-blue {
+    background-color: var(--dark-blue) !important;
+    color: var(--white) !important;
+    font-family: var(--font-heading) !important;
+    border: none;
+    transition: filter 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+.hp-btn-dark-blue:hover { filter: brightness(120%); }
+.hp-btn-dark-blue:active { transform: scale(0.98); }
+
 /*******************************************************************************
  * ======================= LAYER 1: STATE MODE SWITCHER ========================
  ******************************************************************************/
-/* Smooth background transitions for the whole app */
-body { transition: background-color 0.4s ease; }
-
 .hp-mode-view { background-color: var(--light-blue) !important; }
 .hp-mode-sale { background-color: var(--light-yellow) !important; }
 .hp-mode-edit { background-color: var(--light-pink) !important; }
-
-/* The Pill Container & Buttons */
 .hp-mode-pills { padding: 4px; border: 1px solid rgba(0,0,0,0.05); }
-.hp-pill { 
-    font-family: var(--font-heading); 
-    font-weight: bold; 
-    color: var(--dark-blue); 
+
+.hp-pill {
+    font-family: var(--font-heading);
+    font-weight: bold;
+    color: var(--dark-blue);
     border: none;
     transition: all 0.3s ease;
 }
-
-/* Active Pill Colors */
 .hp-pill-view.active { background-color: var(--light-blue-green); color: var(--dark-blue); }
 .hp-pill-sale.active { background-color: var(--yellow); color: var(--white); }
 .hp-pill-edit.active { background-color: var(--pink); color: var(--white); }
@@ -114,10 +135,8 @@ body { transition: background-color 0.4s ease; }
 /*******************************************************************************
  * ========================== LAYER 2: TOP TOOLBAR =============================
  ******************************************************************************/
- /* Layout Balance Fixes for Toolbar */
 .hp-toolbar-side { flex: 1; }
-.hp-toolbar-center { flex: 2; display: flex; justify-content: center; }
-
+.hp-toolbar-center { display: flex; flex: 2; justify-content: center; }
 .hp-search-bar { max-width: 300px; border-color: #dee2e6; }
 .hp-btn-add { background-color: var(--dark-blue); }
 .hp-btn-log { background-color: var(--white); color: var(--dark-blue); font-weight: bold; font-family: var(--font-heading); }
@@ -126,16 +145,12 @@ body { transition: background-color 0.4s ease; }
 /*******************************************************************************
  * ==================== SIDE PANEL (SALES LOG) & LAYOUT SHIFT ==================
  ******************************************************************************/
-.hp-main-wrapper {
-    transition: padding-right 0.3s ease;
-    width: 100%;
-}
+.hp-main-wrapper { transition: padding-right 0.3s ease; width: 100%; }
 
-/* The hidden right-hand drawer */
 .hp-side-panel {
     position: fixed;
     top: 0;
-    right: -400px; /* Hidden off-screen by default */
+    right: -400px;
     width: 400px;
     height: 100vh;
     background-color: var(--white);
@@ -144,39 +159,32 @@ body { transition: background-color 0.4s ease; }
     overflow-y: auto;
 }
 
-/* When the panel is open, push the wrapper to the left and slide panel in */
 body.hp-panel-open .hp-main-wrapper { padding-right: 400px; }
 body.hp-panel-open .hp-side-panel { right: 0; }
 
 .hp-log-list .hp-log-item { border-bottom: 1px solid #f0f0f0; }
 .hp-log-list .hp-log-item:last-child { border-bottom: none; }
 
-/* Sales Log Column Grid Balancers */
 .hp-col-log-no { width: 15%; }
 .hp-col-log-id { width: 25%; }
 .hp-col-log-time { width: 30%; }
 .hp-col-log-total { width: 30%; text-align: right; }
 
-/* --- EDIT MODE STATE CONTROLS --- */
-
-/* Automatically hide the Add button when not in View Mode */
-body.hp-mode-sale #btnAddNewProduct,
-body.hp-mode-edit #btnAddNewProduct {
-    display: none !important;
+/*******************************************************************************
+ * ========================= DYNAMIC STATE CONTROLS ============================
+ ******************************************************************************/
+body.hp-mode-sale #btnAddNewProduct, 
+body.hp-mode-edit #btnAddNewProduct { 
+    display: none !important; 
 }
 
-/* Checkbox positioning and state toggles */
 .hp-product-select-wrapper {
     display: none;
     margin-right: 1rem;
 }
 
-/* Force checkboxes into layout only when Edit mode is active */
-body.hp-mode-edit .hp-product-select-wrapper {
-    display: block;
-}
+body.hp-mode-edit .hp-product-select-wrapper { display: block; }
 
-/* Custom styling for custom checkbox bullets */
 .hp-product-checkbox {
     width: 20px;
     height: 20px;
@@ -184,60 +192,20 @@ body.hp-mode-edit .hp-product-select-wrapper {
     border: 2px solid #cbd5e1;
 }
 
-/* --- CLINIC THEMED BULK BUTTONS --- */
+body.hp-mode-view .hp-product-card { cursor: pointer; }
 
-/* Bulk Delete Button - Styled with Clinic Pink */
-.hp-btn-pink {
-    background-color: var(--pink) !important;
-    color: var(--white) !important;
-    font-family: var(--font-heading) !important;
-    border: none;
-    transition: filter 0.2s ease-in-out, transform 0.1s ease-in-out;
-}
-
-.hp-btn-pink:hover {
-    /* Smoothly darkens the clinic pink without needing hardcoded hex values */
-    filter: brightness(90%); 
-}
-
-.hp-btn-pink:active {
-    transform: scale(0.98);
-}
-
-/* Bulk Group Button - Styled with Clinic Dark Blue */
-.hp-btn-dark-blue {
-    background-color: var(--dark-blue) !important;
-    color: var(--white) !important;
-    font-family: var(--font-heading) !important;
-    border: none;
-    transition: filter 0.2s ease-in-out, transform 0.1s ease-in-out;
-}
-
-.hp-btn-dark-blue:hover {
-    /* Smoothly brightens the dark blue for a nice interactive hover highlight */
-    filter: brightness(120%); 
-}
-
-.hp-btn-dark-blue:active {
-    transform: scale(0.98);
-}
-
-/* --- STATE AND POINTER CONTROLS --- */
-
-/* Only show the clinical pointer cursor when card interactions are valid */
-body.hp-mode-view .hp-product-card {
-    cursor: pointer;
-}
-
-/* --- GROUP CARD STRUCTURAL LAYOUTS --- */
+/*******************************************************************************
+ * ====================== GROUP CARD STRUCTURAL LAYOUTS ========================
+ ******************************************************************************/
 .hp-group-card {
-    background-color: var(--light-blue) !important;
-    border-left: 5px solid var(--blue-green) !important;
+    background-color: var(--light-orange) !important;
+    border-left: 5px solid var(--orange) !important;
     transition: transform 0.15s ease, background-color 0.2s ease;
 }
-
-.hp-group-card:hover {
-    background-color: var(--light-blue-green) !important;
+.hp-group-card:hover { background-color: var(--orange) !important; }
+.hp-group-card:hover .hp-group-title,
+.hp-group-card:hover .hp-dropdown-arrow {
+    color: var(--white) !important;
 }
 
 .hp-group-title {
@@ -245,29 +213,17 @@ body.hp-mode-view .hp-product-card {
     font-family: var(--font-heading);
     cursor: pointer;
     display: inline-block;
+    transition: color 0.2s ease;
 }
 
-.hp-dropdown-arrow {
-    transition: transform 0.2s ease-in-out;
-    font-size: 0.85rem;
-}
+.hp-dropdown-arrow { transition: transform 0.2s ease-in-out, color 0.2s ease; font-size: 0.85rem; }
 
-/* Indented container for child items */
 .hp-group-nested-container {
     padding-left: 2.5rem;
-    border-left: 3px dashed var(--light-blue-green);
+    border-left: 3px dashed var(--orange);
     margin-left: 1.25rem;
     margin-top: -0.25rem;
     margin-bottom: 1rem;
 }
 
-/* Rotate dynamic indicators on open */
-.hp-group-card[data-expanded="true"] .hp-dropdown-arrow {
-    transform: rotate(180deg);
-}
-
-/* Custom Modal Scroller Wrapper */
-.hp-modal-pills-scroll {
-    max-height: 150px;
-    overflow-y: auto;
-}
+.hp-group-card[data-expanded="true"] .hp-dropdown-arrow { transform: rotate(180deg); }

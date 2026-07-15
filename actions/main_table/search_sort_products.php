@@ -4,6 +4,8 @@ include __DIR__ . '/../../includes/db.php';
 $search = $_GET['search'] ?? '';
 $sort = $_GET['sort'] ?? 'name';
 $category = $_GET['category'] ?? '';
+// NEW: Catch the toggle state from the frontend (defaults to true)
+$show_groups = $_GET['show_groups'] ?? 'true'; 
 
 // Establish sorting rules
 $order_by = "p.brand_name ASC";
@@ -18,8 +20,8 @@ if ($sort === 'price_low') {
 $total_rendered = 0;
 
 // --- STEP 1: LOAD CUSTOM GROUPS (ON TOP) ---
-if (empty($category)) {
-    // FIXED: Removed the hallucinated 'created_at' and replaced it with 'group_id'
+// ONLY run this if categories are empty AND the user actually wants to see groups
+if (empty($category) && $show_groups === 'true') {
     $group_query = "SELECT * FROM custom_groups ORDER BY group_id DESC";
     $group_result = $conn->query($group_query);
 
@@ -27,7 +29,6 @@ if (empty($category)) {
         while ($group = $group_result->fetch_assoc()) {
             $group_id = $group['group_id'];
 
-            // Fetch products within this folder matching active search conditions
             $child_query = "SELECT p.*, c.category_name 
                             FROM products p 
                             LEFT JOIN categories c ON p.category_id = c.category_id
@@ -54,7 +55,6 @@ if (empty($category)) {
 
             if ($item_count > 0) {
                 $total_rendered += $item_count;
-                // Render the complete group framework using our new include file
                 include __DIR__ . '/../../includes/group_card.php';
             }
             $child_stmt->close();
@@ -62,11 +62,16 @@ if (empty($category)) {
     }
 }
 
-// --- STEP 2: LOAD UNGROUPED STANDALONE PRODUCTS (BELOW) ---
+// --- STEP 2: LOAD STANDALONE PRODUCTS (BELOW) ---
 $query = "SELECT p.*, c.category_name 
           FROM products p
-          LEFT JOIN categories c ON p.category_id = c.category_id 
-          WHERE p.product_id NOT IN (SELECT product_id FROM product_group_mapping)";
+          LEFT JOIN categories c ON p.category_id = c.category_id WHERE 1=1";
+
+// If groups are ON, we hide products that belong to a group.
+// If groups are OFF, we skip this restriction so ALL products show up flat.
+if (empty($category) && $show_groups === 'true') {
+    $query .= " AND p.product_id NOT IN (SELECT product_id FROM product_group_mapping)";
+}
 
 if (!empty($category)) {
     $query .= " AND p.category_id = ? ";
@@ -99,7 +104,6 @@ if ($result->num_rows > 0) {
     }
 }
 
-// Global empty state indicator trigger
 if ($total_rendered === 0) {
     include __DIR__ . '/../../includes/empty_state.php';
 }

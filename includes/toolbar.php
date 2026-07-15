@@ -1,6 +1,5 @@
 <div class="d-flex align-items-center mb-4 flex-wrap gap-3">
     
-    <!-- Left: Title & Add Button -->
     <div class="d-flex align-items-center gap-3 hp-toolbar-side">
         <h5 class="text-dark-blue font-heading fw-bold mb-0">All Products</h5>
         <button class="btn font-heading btn-sm px-3 py-2 rounded-3 d-none hp-btn-pink" id="btnBulkDelete">
@@ -17,11 +16,9 @@
         </button>
     </div>
 
-    <!-- Center: Search, Filter, & Sort -->
     <div class="d-flex align-items-center gap-2 hp-toolbar-center">
         <input type="text" class="form-control rounded-pill hp-search-bar px-4 py-2 shadow-sm" id="productSearchBar" placeholder="🔍 Search...">
         
-        <!-- Category Filter Dropdown -->
         <div class="dropdown">
             <button class="btn bg-white rounded-pill border shadow-sm dropdown-toggle px-3 py-2 font-heading text-dark-blue" type="button" data-bs-toggle="dropdown" id="categoryFilterBtn">
                 All Categories
@@ -39,7 +36,6 @@
             </ul>
         </div>
 
-        <!-- Sort Dropdown -->
         <div class="dropdown">
             <button class="btn bg-white rounded-pill border shadow-sm dropdown-toggle px-3 py-2 font-heading text-dark-blue" type="button" data-bs-toggle="dropdown">
                 Sort By
@@ -52,10 +48,16 @@
                 <li><a class="dropdown-item fw-bold text-danger" href="#" data-sort="stock_low">Stock: Low First</a></li>
             </ul>
         </div>
+
+        <div class="form-check form-switch d-flex align-items-center ms-2 bg-white border rounded-pill px-3 py-2 shadow-sm">
+            <input class="form-check-input ms-0 me-2" type="checkbox" id="toggleGroupsBtn" checked>
+            <label class="form-check-label font-heading text-dark-blue fw-bold mb-0" for="toggleGroupsBtn">
+                Groups
+            </label>
+        </div>
     </div>
 
-    <!-- Right: Sales Log Trigger -->
-    <div class="d-flex justify-content-end hp-toolbar-side">
+    <div class="d-flex justify-content-end hp-toolbar-side ms-auto">
         <button class="btn rounded-pill px-4 py-2 hp-btn-log shadow-sm d-flex align-items-center gap-2" id="toggleSalesLogBtn">
             📋 Sales Log: <?php echo date('n/j/Y'); ?>
         </button>

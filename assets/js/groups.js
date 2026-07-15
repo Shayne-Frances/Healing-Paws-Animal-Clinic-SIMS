@@ -1,39 +1,41 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // --- COMPONENT REGISTER LABELS & ENGINE CACHE DOM TARGETS ---
-    const gridContainer = document.getElementById('productGridContainer');
+    // --- CACHE MODAL AND FORM ELEMENTS ---
     const groupModalElement = document.getElementById('groupManagementModal');
+    let groupModal = null;
+
+    // Initialize Bootstrap modal safely if it exists on the page
+    if (groupModalElement) {
+        groupModal = new bootstrap.Modal(groupModalElement);
+    }
     
-    // Avoid execution errors if modal code block context isn't parsed onto active view viewport layers
-    if (!groupModalElement || !gridContainer) return;
-    
-    const groupModal = new bootstrap.Modal(groupModalElement);
-    const bodyEl = document.body;
-    
-    const groupForm = document.getElementById('groupManagementForm');
     const inputGroupId = document.getElementById('manage_group_id');
     const inputGroupName = document.getElementById('manage_group_name');
     const pillsContainer = document.getElementById('groupPillsTargetContainer');
     const btnSaveGroup = document.getElementById('btnSaveGroupStructuralModifications');
 
-    // --- COORD ENGINE FOR HIERARCHICAL DUAL STAGE CLICKS ---
-    gridContainer.addEventListener('click', function(e) {
-        // Intercept target trace markers
+    // --- 1. GLOBAL CLICK DELEGATION (Fixes AJAX Wipeout Issue) ---
+    document.addEventListener('click', function(e) {
+        // Find if the clicked element is inside a group card
         const groupCard = e.target.closest('.hp-group-card');
-        if (!groupCard) return; // Pass command validation directly downstream if it's a standard product element execution layout path
+        if (!groupCard) return; 
 
         const groupId = groupCard.getAttribute('data-group-id');
         const nestedContainer = document.getElementById(`nested-group-${groupId}`);
         const isExpanded = groupCard.getAttribute('data-expanded') === 'true';
         const groupNameTextNode = groupCard.querySelector('.hp-group-title');
 
-        // STAGE 2 CLICK CHECK: If already expanded, and clicking the Group Name title specifically -> Fire popup loader
-        if (isExpanded && (e.target === groupNameTextNode || groupNameTextNode.contains(e.target))) {
+        // STAGE 2 CLICK CHECK: If already expanded, and user clicks the Title directly -> Open Management Console
+        if (isExpanded && groupNameTextNode && (e.target === groupNameTextNode || groupNameTextNode.contains(e.target))) {
             e.stopPropagation();
-            launchGroupManagementConsole(groupId, groupNameTextNode.textContent.trim());
+            if (groupModal) {
+                launchGroupManagementConsole(groupId, groupNameTextNode.textContent.trim());
+            } else {
+                console.warn('Group management modal element was not found in the DOM.');
+            }
             return;
         }
 
-        // STAGE 1 CLICK EXEC: Toggle drawer display layouts safely open/close
+        // STAGE 1 CLICK EXEC: Toggle nested product drawer open/close
         if (nestedContainer) {
             if (isExpanded) {
                 nestedContainer.classList.add('d-none');
@@ -45,15 +47,37 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- POPUP DATA RECOVERY POPULATOR DRIVERS ---
+    // --- 2. SHOW GROUPS TOGGLE LISTENER ---
+    const toggleGroupsBtn = document.getElementById('toggleGroupsBtn');
+    if (toggleGroupsBtn) {
+        toggleGroupsBtn.addEventListener('change', function() {
+            triggerGridRefresh();
+        });
+    }
+
+    // --- Helper function to trigger a data reload on your main product grid ---
+    function triggerGridRefresh() {
+        if (typeof window.fetchFilteredProducts === 'function') {
+            window.fetchFilteredProducts();
+        } else {
+            const searchBar = document.getElementById('productSearchBar');
+            if (searchBar) {
+                searchBar.dispatchEvent(new Event('input'));
+            }
+        }
+    }
+
+    // --- 3. POPUP DATA RECOVERY POPULATOR DRIVERS ---
     function launchGroupManagementConsole(groupId, currentGroupName) {
+        if (!inputGroupId || !inputGroupName || !pillsContainer) return;
+
         inputGroupId.value = groupId;
         inputGroupName.value = currentGroupName;
         pillsContainer.innerHTML = '<div class="text-muted font-heading small py-2">Loading linked directory items...</div>';
         
         groupModal.show();
 
-        // Query server worker to fetch current child components linked inside group map frames
+        // Query server to fetch current products mapped inside this group folder
         fetch(`actions/main_table/get_group_items.php?group_id=${groupId}`)
             .then(res => res.json())
             .then(data => {
@@ -64,13 +88,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             })
             .catch(err => {
-                console.error('Critical systems retrieval communication framework down:', err);
+                console.error('Critical database communication framework failure:', err);
                 pillsContainer.innerHTML = '<div class="text-danger font-heading small">Connection error.</div>';
             });
     }
 
-    // Generate rounded sub-element pill configurations inside group control management panel container
+    // Render inner badges inside modal
     function renderLinkedGroupPills(items) {
+        if (!pillsContainer) return;
+
         if (items.length === 0) {
             pillsContainer.innerHTML = '<div class="text-muted font-heading small py-2">No active elements attached here.</div>';
             return;
@@ -89,65 +115,59 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- PILL REMOVAL INTERNAL HOOK DELEGATORS ---
-    pillsContainer.addEventListener('click', function(e) {
-        const removeBtn = e.target.closest('.hp-remove-nested-item-btn');
-        if (!removeBtn) return;
+    // --- 4. PILL REMOVAL EVENT DELEGATORS ---
+    if (pillsContainer) {
+        pillsContainer.addEventListener('click', function(e) {
+            const removeBtn = e.target.closest('.hp-remove-nested-item-btn');
+            if (!removeBtn) return;
 
-        const productId = removeBtn.getAttribute('data-item-id');
-        const groupId = inputGroupId.value;
+            const productId = removeBtn.getAttribute('data-item-id');
+            const groupId = inputGroupId.value;
 
-        if (confirm("Disconnect item layout map link from this container folder?")) {
-            fetch('actions/main_table/remove_product_from_group.php', {
+            if (confirm("Disconnect item layout map link from this container folder?")) {
+                fetch('actions/main_table/remove_product_from_group.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ group_id: groupId, product_id: productId })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        removeBtn.closest('.hp-mini-product-pill').remove();
+                        if (pillsContainer.children.length === 0) {
+                            pillsContainer.innerHTML = '<div class="text-muted font-heading small py-2">No active elements attached here.</div>';
+                        }
+                        triggerGridRefresh();
+                    } else {
+                        alert('Process action failure: ' + data.error);
+                    }
+                });
+            }
+        });
+    }
+
+    // --- 5. MASTER SUBMIT TRIGGER CONTROLLER ---
+    if (btnSaveGroup) {
+        btnSaveGroup.addEventListener('click', function() {
+            const groupId = inputGroupId.value;
+            const targetNameString = inputGroupName.value.trim();
+
+            if (!targetNameString) return;
+
+            fetch('actions/main_table/update_group_meta.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ group_id: groupId, product_id: productId })
+                body: JSON.stringify({ group_id: groupId, group_name: targetNameString })
             })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    // Instantly trigger re-query updates without closing modal frame wrappers
-                    removeBtn.closest('.hp-mini-product-pill').remove();
-                    if (pillsContainer.children.length === 0) {
-                        pillsContainer.innerHTML = '<div class="text-muted font-heading small py-2">No active elements attached here.</div>';
-                    }
-                    // Fire global event interface hook logic driver loop updates back inside master table content views
-                    if (typeof window.fetchFilteredProducts === 'function') {
-                        window.fetchFilteredProducts();
-                    } else if (document.getElementById('productSearchBar')) {
-                        // Quality of life workaround backup trigger
-                        document.getElementById('productSearchBar').dispatchEvent(new Event('input'));
-                    }
+                    if (groupModal) groupModal.hide();
+                    triggerGridRefresh();
                 } else {
-                    alert('Process action failure: ' + data.error);
+                    alert('Meta modification rejection error: ' + data.error);
                 }
             });
-        }
-    });
-
-    // --- MASTER SUBMIT TRIGGER CONTROLLER ---
-    btnSaveGroup.addEventListener('click', function() {
-        const groupId = inputGroupId.value;
-        const targetNameString = inputGroupName.value.trim();
-
-        if (!targetNameString) return;
-
-        fetch('actions/main_table/update_group_meta.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ group_id: groupId, group_name: targetNameString })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                groupModal.hide();
-                // Call search updating logic from core js grid engine mapping functions
-                if (document.getElementById('productSearchBar')) {
-                    document.getElementById('productSearchBar').dispatchEvent(new Event('input'));
-                }
-            } else {
-                alert('Meta modification rejection error: ' + data.error);
-            }
         });
-    });
+    }
 });
