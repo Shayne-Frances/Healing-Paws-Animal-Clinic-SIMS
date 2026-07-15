@@ -348,4 +348,6 @@ document.addEventListener('DOMContentLoaded', function () {
             fetchFilteredProducts();
         });
     });
+
+    fetchFilteredProducts();
 });

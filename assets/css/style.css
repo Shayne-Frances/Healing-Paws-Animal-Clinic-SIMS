@@ -227,3 +227,24 @@ body.hp-mode-view .hp-product-card { cursor: pointer; }
 }
 
 .hp-group-card[data-expanded="true"] .hp-dropdown-arrow { transform: rotate(180deg); }
+
+/* ==========================================================================
+   Group Folder Dropdown Hitbox Enhancer
+   ========================================================================== */
+.hp-dropdown-arrow {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    padding: 2px;
+    z-index: 10;
+}
+
+/* Invisible magic hitbox expander - makes clicking easy without altering card size */
+.hp-dropdown-arrow::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    bottom: -20px;
+    left: -35px; /* Extends extra to the left so it's super easy to click */
+    right: -20px;
+}

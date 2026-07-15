@@ -9,13 +9,13 @@
             <div class="hp-group-folder-icon me-3">📦</div>
             <div>
                 <h6 class="mb-0 hp-group-title text-dark-blue fw-bold">
-                    <?php echo htmlspecialchars($group['group_name']); ?>
+                    <?php echo htmlspecialchars($group_name ?? 'New Group'); ?>
                 </h6>
                 <small class="text-muted d-block"><?php echo $item_count; ?> Items linked inside</small>
             </div>
         </div>
         
-        <div class="text-muted font-heading fw-bold hp-dropdown-arrow">▼</div>
+        <div class="text-muted font-heading fw-bold hp-dropdown-arrow fs-5">▼</div>
     </div>
 </div>
 

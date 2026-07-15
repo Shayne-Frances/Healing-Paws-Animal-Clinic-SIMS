@@ -21,32 +21,49 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // If we are in Edit Mode, let the main checkbox script handle interactions instead
         if (bodyEl.classList.contains('hp-mode-edit')) return;
-        
-        // --- NEW GUARD: Fixes Click Overlap Bug ---
-        // If the user specifically clicked a product card INSIDE the group, 
-        // ignore the folder toggle and let custom.js open the product modal!
+
+        // GUARD: If clicking an individual product INSIDE the folder, let custom.js open the product modal!
         if (e.target.closest('.hp-product-card')) return;
 
         const groupId = groupCard.getAttribute('data-group-id');
         const nestedContainer = document.getElementById(`nested-group-${groupId}`);
         const isExpanded = groupCard.getAttribute('data-expanded') === 'true';
-        const groupTitle = groupCard.querySelector('.hp-group-title');
+        
+        const cardHeader = e.target.closest('.card-body');
+        if (!cardHeader) return;
 
-        // Check if clicking title text directly on an already expanded card to open the structural modal
-        if (isExpanded && groupTitle && (e.target === groupTitle || groupTitle.contains(e.target))) {
+        const isArrowClick = e.target.closest('.hp-dropdown-arrow');
+
+        // ESCAPE HATCH: If user clicks the ▼ arrow, ALWAYS just toggle the folder open/close
+        if (isArrowClick) {
             e.stopPropagation();
-            if (groupModal) {
-                launchGroupManagementConsole(groupId, groupTitle.textContent.trim());
+            if (nestedContainer) {
+                if (isExpanded) {
+                    nestedContainer.classList.add('d-none');
+                    groupCard.setAttribute('data-expanded', 'false');
+                } else {
+                    nestedContainer.classList.remove('d-none');
+                    groupCard.setAttribute('data-expanded', 'true');
+                }
             }
             return;
         }
 
-        // Toggle Folder Open/Closed State
-        if (nestedContainer) {
-            if (isExpanded) {
-                nestedContainer.classList.add('d-none');
-                groupCard.setAttribute('data-expanded', 'false');
+        // SMART CLICK LOGIC: If user clicked the rest of the header...
+        if (isExpanded) {
+            // STAGE 2: Folder is already open -> Launch Modal!
+            e.stopPropagation();
+            const groupTitleEl = groupCard.querySelector('.hp-group-title');
+            const titleText = groupTitleEl ? groupTitleEl.textContent.trim() : 'Group';
+            
+            if (groupModal) {
+                launchGroupManagementConsole(groupId, titleText);
             } else {
+                alert("Error: The Modal HTML is missing! Please ensure group_management_modal.php is included correctly in index.php.");
+            }
+        } else {
+            // STAGE 1: Folder is closed -> Expand it!
+            if (nestedContainer) {
                 nestedContainer.classList.remove('d-none');
                 groupCard.setAttribute('data-expanded', 'true');
             }
@@ -120,12 +137,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        removeBtn.closest('.hp-mini-product-pill').remove();
-                        if (pillsContainer.children.length === 0) {
-                            pillsContainer.innerHTML = '<div class="text-muted font-heading small w-100 py-2">Empty Folder. No active items linked.</div>';
-                        }
-                        // Dispatch Global custom event to notify primary controller grid
-                        document.dispatchEvent(new CustomEvent('products-updated'));
+                        const pillElement = removeBtn.closest('.hp-mini-product-pill');
+                        
+                        // Add smooth CSS animation directly via JS
+                        pillElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        pillElement.style.opacity = '0';
+                        pillElement.style.transform = 'scale(0.8)';
+                        
+                        // Wait for the 300ms animation to finish before deleting it from the DOM
+                        setTimeout(() => {
+                            pillElement.remove();
+                            if (pillsContainer.children.length === 0) {
+                                pillsContainer.innerHTML = '<div class="text-muted font-heading small w-100 py-2">Empty Folder. No active items linked.</div>';
+                            }
+                            document.dispatchEvent(new CustomEvent('products-updated'));
+                        }, 300);
                     } else {
                         alert('Unlink failure: ' + data.error);
                     }
