@@ -24,13 +24,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const groupCard = e.target.closest('.hp-group-card');
         if (!groupCard) return; 
 
-        // 1. Check for the arrow click FIRST
         const isArrowClick = e.target.closest('.hp-dropdown-arrow');
+        const bodyEl = document.body;
 
-        // 2. Prevent interaction in edit mode UNLESS they clicked the arrow
-        if (bodyEl.classList.contains('hp-mode-edit') && !isArrowClick) return;
+        // Block modal opening in Edit Mode OR Sale Mode
+        const isEditMode = bodyEl.classList.contains('hp-mode-edit');
+        const isSaleMode = bodyEl.classList.contains('hp-mode-sale');
+
+        if ((isEditMode || isSaleMode) && !isArrowClick) {
+            // Let the Sale Mode handler process this click instead of opening modals
+            return;
+        }
         
-        // 3. Prevent interaction if clicking a nested product
         if (e.target.closest('.hp-product-card')) return;
 
         const groupId = groupCard.getAttribute('data-group-id');
@@ -40,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const cardHeader = e.target.closest('.card-body');
         if (!cardHeader) return;
 
-        // Handle Expand/Collapse Arrow Click
+        // Handle Expand/Collapse Arrow Click (Allowed in all modes)
         if (isArrowClick) {
             e.stopPropagation();
             if (nestedContainer) {
@@ -55,17 +60,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Handle Folder Body Click (Open Modal or Expand)
+        // Standard logic for non-edit, non-sale modes
         if (isExpanded) {
             e.stopPropagation();
-            
-            // Read clean group name directly from the dataset attribute
             const titleText = groupCard.getAttribute('data-group-name') || 'Group';
-            
             if (groupModal) {
                 launchGroupManagementConsole(groupId, titleText);
-            } else {
-                alert("Error: The Modal HTML is missing!");
             }
         } else {
             if (nestedContainer) {

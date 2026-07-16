@@ -2,16 +2,15 @@
 // Evaluate stock status
 $is_out_of_stock = ($row['stock_quantity'] <= 0);
 $card_classes = "card mb-3 shadow-sm hp-product-card rounded-4 border-0";
-$pointer_events = "";
 
-$stock_alert = "";
 if ($is_out_of_stock) {
-    // Apply styling and disable interactions for zero stock
-    $card_classes .= " opacity-50 bg-light";
-    $pointer_events = 'style="pointer-events: none;"';
+    // ONLY apply visual grey-out. Do NOT disable pointer-events via CSS
+    $card_classes .= " opacity-50 bg-light hp-out-of-stock";
     $stock_alert = '<div class="text-danger mt-1 hp-stock-alert fw-bold">Out of Stock!</div>';
 } elseif ($row['stock_quantity'] <= $row['reorder_level']) {
     $stock_alert = '<div class="text-warning mt-1 hp-stock-alert">⚠️ Low Stock!</div>';
+} else {
+    $stock_alert = "";
 }
 
 // Generate image rendering block
@@ -31,12 +30,10 @@ if (!empty($row['picture_link'])) {
      data-stock="<?php echo $row['stock_quantity']; ?>"
      data-reorder="<?php echo $row['reorder_level']; ?>"
      data-picture="<?php echo htmlspecialchars($row['picture_link']); ?>"
-     data-details="<?php echo htmlspecialchars($row['other_details']); ?>"
-     <?php echo $pointer_events; ?>>
+     data-details="<?php echo htmlspecialchars($row['other_details']); ?>">
     
     <div class="card-body d-flex align-items-center justify-content-between py-2 px-4">
         <div class="d-flex align-items-center hp-col-brand">
-
             <div class="hp-product-select-wrapper">
                 <input type="checkbox" class="form-check-input rounded-circle hp-product-checkbox shadow-sm">
             </div>
