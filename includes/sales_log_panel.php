@@ -22,8 +22,10 @@
                     ?>
                     <div class="d-flex justify-content-between align-items-center py-3 hp-log-item px-2">
                         <span class="fw-bold text-dark-blue hp-col-log-no"><?php echo $padded_counter; ?></span>
-                        <span class="text-muted small hp-col-log-id">#<?php echo htmlspecialchars($sale['sales_id']); ?></span>
-                        <span class="text-muted small hp-col-log-time"><?php echo $sale['sale_time']; ?></span>
+                        <span class="text-muted small hp-col-log-id">#<?php echo htmlspecialchars($sale['sale_id']); ?></span>
+                        
+                        <span class="text-muted small hp-col-log-time"><?php echo htmlspecialchars($sale['sale_time']); ?></span>
+                        
                         <span class="fw-bold text-dark-blue font-heading hp-col-log-total">₱<?php echo number_format($sale['total_amount'], 2); ?></span>
                     </div>
                     <?php

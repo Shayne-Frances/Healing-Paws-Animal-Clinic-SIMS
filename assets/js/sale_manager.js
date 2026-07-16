@@ -281,7 +281,7 @@ function processCheckout() {
         return;
     }
 
-    fetch('actions/checkout.php', {
+    fetch('actions/sales_log/checkout.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cart)
