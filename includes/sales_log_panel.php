@@ -75,6 +75,20 @@ $title_text = ($display_date == date('Y-m-d')) ? "Today's Sales" : date('M d, Y'
                                     echo '<div class="text-muted fst-italic text-center py-1">No item details found.</div>';
                                 }
                                 ?>
+
+                                <div class="d-flex justify-content-end gap-2 mt-3 pt-2 border-top border-secondary-subtle">
+                                    <button class="btn btn-sm btn-outline-secondary fw-bold px-2 py-1" 
+                                            style="font-size: 0.75rem; border-radius: 4px;"
+                                            onclick="viewReceipt(<?php echo $sale['sale_id']; ?>)">
+                                        👁️ View Receipt
+                                    </button>
+                                    <button class="btn btn-sm btn-dark-blue text-white fw-bold px-2 py-1" 
+                                            style="font-size: 0.75rem; border-radius: 4px; background-color: var(--dark-blue);"
+                                            onclick="printReceipt(<?php echo $sale['sale_id']; ?>)">
+                                        🖨️ Print Receipt
+                                    </button>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -89,15 +103,34 @@ $title_text = ($display_date == date('Y-m-d')) ? "Today's Sales" : date('M d, Y'
         </div>
     </div>
 </div>
- 
+
 <script>
+// Receipt Printing Engine (Opens in a tiny popup to clear up workspace space)
+function printReceipt(saleId) {
+    const width = 450;
+    const height = 650;
+    const left = (screen.width - width) / 2;
+    const top = (screen.height - height) / 2;
+    
+    // Opens small receipt window with instructions to auto-trigger the print sequence
+    window.open(
+        'receipt_print.php?sale_id=' + saleId + '&action=print', 
+        'ReceiptPrintWindow', 
+        `width=${width},height=${height},left=${left},top=${top},scrollbars=yes`
+    );
+}
+
+// Receipt Viewing Engine (Opens in full page tab)
+function viewReceipt(saleId) {
+    window.open('receipt_print.php?sale_id=' + saleId + '&action=view', '_blank');
+}
+
 // 1. Existing listener for when you manually change the date
 document.getElementById('salesLogDate').addEventListener('change', function() {
     const selectedDate = this.value;
     const listContainer = document.querySelector('.hp-log-list');
     const titleElement = document.querySelector('#salesLogPanel h5');
     
-    // Get today's date adjusted to the local timezone
     const today = new Date();
     const offset = today.getTimezoneOffset() * 60000;
     const localToday = (new Date(today - offset)).toISOString().split('T')[0];
@@ -125,7 +158,7 @@ document.getElementById('salesLogDate').addEventListener('change', function() {
         });
 });
 
-// 2. NEW: Reset to today's date when the close button is clicked
+// 2. Reset to today's date when the close button is clicked
 document.getElementById('closeSalesLogBtn').addEventListener('click', function() {
     const dateInput = document.getElementById('salesLogDate');
     
@@ -133,10 +166,9 @@ document.getElementById('closeSalesLogBtn').addEventListener('click', function()
     const offset = today.getTimezoneOffset() * 60000;
     const localToday = (new Date(today - offset)).toISOString().split('T')[0];
 
-    // Check if the current input is NOT today
     if (dateInput.value !== localToday) {
-        dateInput.value = localToday; // Reset the input field
-        dateInput.dispatchEvent(new Event('change')); // Trigger the fetch we built above!
+        dateInput.value = localToday; // Reset input field
+        dateInput.dispatchEvent(new Event('change')); // Trigger fetch
     }
 });
 </script>
