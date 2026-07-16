@@ -248,3 +248,8 @@ body.hp-mode-view .hp-product-card { cursor: pointer; }
     left: -35px; /* Extends extra to the left so it's super easy to click */
     right: -20px;
 }
+
+/* Shift Paper Bag left to clear the Sales Log side panel when open */
+body.hp-panel-open .hp-paper-bag {
+    right: 420px !important;
+}

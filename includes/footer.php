@@ -6,5 +6,6 @@
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/custom.js"></script>
 <script src="assets/js/group_manager.js"></script>
+<script src="assets/js/sale_manager.js"></script>
 </body>
 </html>

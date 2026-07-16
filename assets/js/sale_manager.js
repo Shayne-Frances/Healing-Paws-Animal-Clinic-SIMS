@@ -1,8 +1,8 @@
 // assets/js/sale_manager.js
-let cart = {}; // Store items: { product_id: { name, price, qty, maxStock } }
+let cart = {}; // Store items: { product_id: { name, price, qty, maxStock, picture } }
 
 document.addEventListener('click', function(e) {
-    // Only run if the page is currently in Sale Mode
+    // ONLY execute POS logic if the app is physically in Sale Mode
     if (!document.body.classList.contains('hp-mode-sale')) return;
 
     // 1. Check if clicking an individual Product Card
@@ -22,91 +22,172 @@ document.addEventListener('click', function(e) {
 });
 
 /**
- * Handles adding an individual product card to the cart
+ * Handles adding an individual product to the cart with flight effects
  */
 function handleProductClick(card) {
-    const id = card.dataset.id; // Changed from productId to id
-    const name = card.dataset.brand; // Changed from name to brand
+    const id = card.dataset.id;
+    const name = card.dataset.brand;
     const price = parseFloat(card.dataset.price);
     const maxStock = parseInt(card.dataset.stock);
+    const picture = card.dataset.picture;
     const stockIndicator = document.getElementById(`stock-visual-${id}`);
 
-    // If out of stock right from the beginning
-    if (maxStock <= 0) {
-        showToast(`Clinical Warning: ${name} is completely out of stock and cannot be added.`, 'warning');
-        return;
-    }
-
+    // Fetch live quantity currently sitting in our virtual basket
     let currentQtyInCart = cart[id] ? cart[id].qty : 0;
 
-    if (currentQtyInCart >= maxStock) {
-        showToast(`Clinical Warning: ${name} has insufficient stock to add more!`, 'warning');
+    // Out of Stock Logic check
+    if (maxStock <= 0) {
+        showToast(`Warning: ${name} is completely out of stock! Not including this in the paper bag.`, 'warning');
         return;
     }
 
-    // Add/Increment Cart Item
-    if (!cart[id]) {
-        cart[id] = { name, price, qty: 1, maxStock };
-    } else {
-        cart[id].qty += 1;
+    if (currentQtyInCart >= maxStock) {
+        showToast(`Warning: ${name} has insufficient stock to add more!`, 'warning');
+        return;
     }
 
-    // Visual Stock UI Update (Optimistic)
-    let visualStockLeft = maxStock - cart[id].qty;
-    stockIndicator.textContent = visualStockLeft === 0 ? '0 pcs left' : `${visualStockLeft} pcs left`;
+    // Capture starting position for flight animation
+    const rect = card.getBoundingClientRect();
+    const startX = rect.left + rect.width / 2;
+    const startY = rect.top + rect.height / 2;
 
-    renderPaperBag();
+    // Trigger Fly Animation using the product image or the fallback soap emoji
+    const animContent = picture ? `<img src="${picture}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">` : `<span style="font-size: 1.5rem;">🧼</span>`;
+    triggerFlightAnimation(startX, startY, animContent, () => {
+        // This callback runs only AFTER the item lands safely inside the bag
+        if (!cart[id]) {
+            cart[id] = { name, price, qty: 1, maxStock, picture };
+        } else {
+            cart[id].qty += 1;
+        }
+        renderPaperBag();
+        triggerCartBounce();
+    });
+
+    // Optimistic UI Update: Instantly decrement visual main-screen counter
+    let visualStockLeft = maxStock - (currentQtyInCart + 1);
+    stockIndicator.textContent = visualStockLeft === 0 ? '0 pcs left' : `${visualStockLeft} pcs left`;
 }
 
 /**
- * Handles clicking a group card to bulk-add all of its nested products
+ * Handles bulk-adding nested products with a singular "📦 Package" flight
  */
 function handleGroupBulkAdd(groupCard) {
     const groupId = groupCard.getAttribute('data-group-id');
     const nestedContainer = document.getElementById(`nested-group-${groupId}`);
 
     if (!nestedContainer) {
-        showToast("Error: No items found inside this group.", "warning");
+        showToast("Error: Group has no products assigned.", "warning");
         return;
     }
 
-    // Select all product cards inside the expanded/nested group container
     const nestedProducts = nestedContainer.querySelectorAll('.hp-product-card');
-    let addedCount = 0;
+    let itemsToProcess = [];
     let skippedItems = [];
 
+    // Evaluate which products qualify for inclusion
     nestedProducts.forEach(card => {
         const id = card.dataset.id;
         const name = card.dataset.brand;
         const maxStock = parseInt(card.dataset.stock);
         let currentQtyInCart = cart[id] ? cart[id].qty : 0;
 
-        // If item is completely out of stock or cart limit is reached, skip and warn
         if (maxStock <= 0 || currentQtyInCart >= maxStock) {
             skippedItems.push(name);
         } else {
-            // Reuse individual add logic
-            handleProductClick(card);
-            addedCount++;
+            itemsToProcess.push(card);
         }
     });
 
-    // Notify the user if items were skipped during bulk-add
-    if (skippedItems.length > 0) {
-        showToast(`Warning: Skipped ${skippedItems.join(', ')} because they are out of stock.`, 'warning');
-    } else if (addedCount > 0) {
-        showToast(`Added items in group to paper bag!`, 'success');
+    // If everything inside the package is out of stock, drop execution
+    if (itemsToProcess.length === 0) {
+        if (skippedItems.length > 0) {
+            showToast(`Warning: Group items (${skippedItems.join(', ')}) are out of stock!`, 'warning');
+        }
+        return;
     }
+
+    // Flight Path configuration for the single package container
+    const rect = groupCard.getBoundingClientRect();
+    const startX = rect.left + rect.width / 2;
+    const startY = rect.top + rect.height / 2;
+
+    triggerFlightAnimation(startX, startY, `<span style="font-size: 2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));">📦</span>`, () => {
+        // Unpack package contents into the cart database model
+        itemsToProcess.forEach(card => {
+            const id = card.dataset.id;
+            const name = card.dataset.brand;
+            const price = parseFloat(card.dataset.price);
+            const maxStock = parseInt(card.dataset.stock);
+            const picture = card.dataset.picture;
+            const stockIndicator = document.getElementById(`stock-visual-${id}`);
+
+            let currentQtyInCart = cart[id] ? cart[id].qty : 0;
+
+            if (!cart[id]) {
+                cart[id] = { name, price, qty: 1, maxStock, picture };
+            } else {
+                cart[id].qty += 1;
+            }
+
+            // Sync original card visual trackers
+            let visualStockLeft = maxStock - (currentQtyInCart + 1);
+            stockIndicator.textContent = visualStockLeft === 0 ? '0 pcs left' : `${visualStockLeft} pcs left`;
+        });
+
+        renderPaperBag();
+        triggerCartBounce();
+
+        if (skippedItems.length > 0) {
+            showToast(`Note: Added active products. Skipped ${skippedItems.join(', ')} (out of stock).`, 'warning');
+        } else {
+            showToast(`Group products unpacked successfully inside paper bag!`, 'success');
+        }
+    });
 }
 
 /**
- * Decrement item count by one
+ * Creates and executes absolute spatial coordinates fly transitions
+ */
+function triggerFlightAnimation(startX, startY, htmlContent, callback) {
+    const bagElement = document.getElementById('paperBagContainer');
+    const bagRect = bagElement.getBoundingClientRect();
+    const endX = bagRect.left + bagRect.width / 4;
+    const endY = bagRect.top + bagRect.height / 4;
+
+    // Generate flying element clone
+    const clone = document.createElement('div');
+    clone.className = 'hp-flying-clone';
+    clone.innerHTML = htmlContent;
+    clone.style.left = `${startX - 20}px`;
+    clone.style.top = `${startY - 20}px`;
+    document.body.appendChild(clone);
+
+    // Forces a browser reflow so transition animation works smoothly
+    clone.offsetWidth;
+
+    // Launch element towards targets
+    clone.style.left = `${endX}px`;
+    clone.style.top = `${endY}px`;
+    clone.style.transform = 'scale(0.3) rotate(360deg)';
+    clone.style.opacity = '0.4';
+
+    // FIX: Using setTimeout instead of transitionend prevents multi-triggering 
+    // from the 4 transitioning properties (left, top, transform, opacity)
+    setTimeout(() => {
+        clone.remove();
+        if (callback) callback();
+    }, 700); // 700ms perfectly matches our 0.7s CSS transition
+}
+
+/**
+ * Decrements the visual cart pill, adding back to the main inventory counts
  */
 function removeOneFromCart(id) {
     if (cart[id]) {
         cart[id].qty -= 1;
         
-        // Return visual stock levels
+        // Return visual inventory level back up to main screen indicator
         const stockIndicator = document.getElementById(`stock-visual-${id}`);
         let visualStockLeft = cart[id].maxStock - cart[id].qty;
         stockIndicator.textContent = `${visualStockLeft} pcs left`;
@@ -119,7 +200,18 @@ function removeOneFromCart(id) {
 }
 
 /**
- * Update current Paper Bag visual DOM
+ * Cart update physical bounce effect
+ */
+function triggerCartBounce() {
+    const bagElement = document.getElementById('paperBagContainer');
+    bagElement.classList.add('hp-cart-bounce');
+    bagElement.addEventListener('animationend', () => {
+        bagElement.classList.remove('hp-cart-bounce');
+    }, { once: true });
+}
+
+/**
+ * Renders the clean medical Pill list UI inside the Paper Bag container
  */
 function renderPaperBag() {
     const bagContainer = document.getElementById('paperBagContainer');
@@ -135,7 +227,9 @@ function renderPaperBag() {
         return;
     }
 
-    let html = `<h5>🛍️ Current Sale</h5><ul class="list-group mb-3" style="max-height: 40vh; overflow-y: auto;">`;
+    let html = `<h5 class="fw-bold font-heading mb-3">🛍️ Current Sale</h5>`;
+    html += `<div style="max-height: 40vh; overflow-y: auto; padding-right: 5px;">`;
+
     let grandTotal = 0;
 
     for (let id in cart) {
@@ -143,28 +237,43 @@ function renderPaperBag() {
         const lineTotal = item.price * item.qty;
         grandTotal += lineTotal;
 
+        // Render picture or soap fallback
+        const imageBlock = item.picture 
+            ? `<img src="${item.picture}" class="hp-cart-pill-img">` 
+            : `<div class="hp-cart-pill-img">🧼</div>`;
+
+        // The Pill structure requested
         html += `
-            <li class="list-group-item d-flex justify-content-between align-items-center text-sm">
-                <div>
-                    <button class="btn btn-sm btn-outline-danger me-2 py-0 px-2 fw-bold" onclick="removeOneFromCart(${id})">✕</button>
-                    ${item.name} <strong class="ms-1 text-primary">x${item.qty}</strong>
+            <div class="hp-cart-pill">
+                <button class="hp-btn-minus" onclick="removeOneFromCart(${id})" title="Remove One">✕</button>
+                
+                ${imageBlock}
+                
+                <div class="hp-cart-pill-details">
+                    <h6 class="mb-0 text-truncate fw-bold text-dark" style="font-size: 0.9rem;">${item.name}</h6>
+                    <span class="text-muted small">₱${item.price.toFixed(2)}</span>
                 </div>
-                <span class="fw-bold text-dark">₱${lineTotal.toFixed(2)}</span>
-            </li>`;
+                
+                <div class="text-end ps-2">
+                    <span class="badge bg-success rounded-pill fw-bold" style="font-size: 0.85rem;">x${item.qty}</span>
+                </div>
+            </div>`;
     }
     
-    html += `</ul>
-             <div class="d-flex justify-content-between fs-5 fw-bold mb-3 border-top pt-2">
-                 <span>Total:</span>
-                 <span class="text-success">₱${grandTotal.toFixed(2)}</span>
-             </div>
-             <button class="btn btn-success w-100 fw-bold py-2 shadow-sm" onclick="processCheckout()">Confirm Sale</button>`;
+    html += `</div>`; // Close scrollable item wrapper
+    
+    html += `
+         <div class="d-flex justify-content-between fs-5 fw-bold mt-3 mb-3 border-top pt-2">
+             <span class="font-heading">Total:</span>
+             <span class="text-success">₱${grandTotal.toFixed(2)}</span>
+         </div>
+         <button class="btn btn-success w-100 fw-bold py-2 rounded-3 shadow-sm" onclick="processCheckout()">Confirm Sale</button>`;
              
     bagContainer.innerHTML = html;
 }
 
 /**
- * Transmit checkout payload securely to backend
+ * Transmit checkout payload securely to actions/checkout.php
  */
 function processCheckout() {
     if (Object.keys(cart).length === 0) {
@@ -183,6 +292,7 @@ function processCheckout() {
             showToast("Sale completed successfully!", "success");
             cart = {};
             renderPaperBag();
+            setTimeout(() => window.location.reload(), 1500); // Reload to sync DB stock levels with frontend elements
         } else {
             showToast(data.error || "Checkout failed.", "warning");
         }
