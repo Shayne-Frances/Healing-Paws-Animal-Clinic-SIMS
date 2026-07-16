@@ -1,9 +1,21 @@
+<?php 
+// Determine the display date for the input field and title
+$display_date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
+$title_text = ($display_date == date('Y-m-d')) ? "Today's Sales" : date('M d, Y', strtotime($display_date));
+?>
 <div id="salesLogPanel" class="hp-side-panel shadow-lg border-start">
     <div class="p-4 d-flex flex-column h-100">
         
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="font-heading fw-bold text-dark-blue mb-0">Today's Sales Log</h5>
-            <button type="button" class="btn-close" id="closeSalesLogBtn"></button>
+            <h5 class="font-heading fw-bold text-dark-blue mb-0"><?php echo $title_text; ?></h5>
+            
+            <div class="d-flex align-items-center gap-2">
+                <input type="date" id="salesLogDate" 
+                       class="form-control form-control-sm border-secondary text-dark-blue fw-bold shadow-sm" 
+                       style="border-radius: 6px; cursor: pointer; outline: none; background-color: var(--light-blue);"
+                       value="<?php echo htmlspecialchars($display_date); ?>">
+                <button type="button" class="btn-close ms-2" id="closeSalesLogBtn"></button>
+            </div>
         </div>
 
         <div class="d-flex justify-content-between px-2 mb-2 small fw-bold text-secondary text-uppercase border-bottom pb-2">
@@ -16,7 +28,6 @@
         <div class="flex-grow-1 overflow-auto pe-2 hp-log-list mt-2">
             <?php
             if (isset($sales_result) && $sales_result->num_rows > 0) {
-                // FIX 1: Start counter at total rows, count backwards so oldest is #1
                 $counter = $sales_result->num_rows; 
                 
                 while ($sale = $sales_result->fetch_assoc()) {
@@ -69,14 +80,47 @@
                     </div>
                     
                     <?php
-                    // Decrement the counter for the next item
                     $counter--; 
                 }
             } else {
-                echo '<div class="text-center text-muted small py-4">No sales records logged today.</div>';
+                echo '<div class="text-center text-muted small py-4">No sales records logged for this date.</div>';
             }
             ?>
         </div>
-
     </div>
 </div>
+ 
+<script>
+document.getElementById('salesLogDate').addEventListener('change', function() {
+    const selectedDate = this.value;
+    const listContainer = document.querySelector('.hp-log-list');
+    const titleElement = document.querySelector('#salesLogPanel h5');
+    
+    // 1. Update the panel title without refreshing
+    const today = new Date();
+    const offset = today.getTimezoneOffset() * 60000;
+    const localToday = (new Date(today - offset)).toISOString().split('T')[0];
+
+    if (selectedDate === localToday) {
+        titleElement.textContent = "Today's Sales";
+    } else {
+        const dateObj = new Date(selectedDate);
+        titleElement.textContent = dateObj.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    }
+
+    // 2. Show a loading message in the list area
+    listContainer.innerHTML = '<div class="text-center text-muted small py-4 spinner-border spinner-border-sm mx-auto d-block" role="status"></div><div class="text-center text-muted small mt-2">Loading sales...</div>';
+
+    // 3. Fetch the data quietly in the background
+    fetch('actions/sales_log/ajax_get_sales.php?date=' + selectedDate)
+        .then(response => response.text())
+        .then(html => {
+            // 4. Inject the fetched sales list right into the panel
+            listContainer.innerHTML = html;
+        })
+        .catch(err => {
+            console.error('Error fetching sales:', err);
+            listContainer.innerHTML = '<div class="text-center text-danger small py-4">Failed to load sales data.</div>';
+        });
+});
+</script>
