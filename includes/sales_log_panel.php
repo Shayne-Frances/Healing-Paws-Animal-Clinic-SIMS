@@ -91,16 +91,18 @@ $title_text = ($display_date == date('Y-m-d')) ? "Today's Sales" : date('M d, Y'
 </div>
  
 <script>
+// 1. Existing listener for when you manually change the date
 document.getElementById('salesLogDate').addEventListener('change', function() {
     const selectedDate = this.value;
     const listContainer = document.querySelector('.hp-log-list');
     const titleElement = document.querySelector('#salesLogPanel h5');
     
-    // 1. Update the panel title without refreshing
+    // Get today's date adjusted to the local timezone
     const today = new Date();
     const offset = today.getTimezoneOffset() * 60000;
     const localToday = (new Date(today - offset)).toISOString().split('T')[0];
 
+    // Update title
     if (selectedDate === localToday) {
         titleElement.textContent = "Today's Sales";
     } else {
@@ -108,19 +110,33 @@ document.getElementById('salesLogDate').addEventListener('change', function() {
         titleElement.textContent = dateObj.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
     }
 
-    // 2. Show a loading message in the list area
+    // Show loading spinner
     listContainer.innerHTML = '<div class="text-center text-muted small py-4 spinner-border spinner-border-sm mx-auto d-block" role="status"></div><div class="text-center text-muted small mt-2">Loading sales...</div>';
 
-    // 3. Fetch the data quietly in the background
+    // Fetch new data
     fetch('actions/sales_log/ajax_get_sales.php?date=' + selectedDate)
         .then(response => response.text())
         .then(html => {
-            // 4. Inject the fetched sales list right into the panel
             listContainer.innerHTML = html;
         })
         .catch(err => {
             console.error('Error fetching sales:', err);
             listContainer.innerHTML = '<div class="text-center text-danger small py-4">Failed to load sales data.</div>';
         });
+});
+
+// 2. NEW: Reset to today's date when the close button is clicked
+document.getElementById('closeSalesLogBtn').addEventListener('click', function() {
+    const dateInput = document.getElementById('salesLogDate');
+    
+    const today = new Date();
+    const offset = today.getTimezoneOffset() * 60000;
+    const localToday = (new Date(today - offset)).toISOString().split('T')[0];
+
+    // Check if the current input is NOT today
+    if (dateInput.value !== localToday) {
+        dateInput.value = localToday; // Reset the input field
+        dateInput.dispatchEvent(new Event('change')); // Trigger the fetch we built above!
+    }
 });
 </script>
