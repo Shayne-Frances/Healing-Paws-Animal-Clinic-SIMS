@@ -16,7 +16,9 @@
         <div class="flex-grow-1 overflow-auto pe-2 hp-log-list mt-2">
             <?php
             if (isset($sales_result) && $sales_result->num_rows > 0) {
-                $counter = 1;
+                // FIX 1: Start counter at total rows, count backwards so oldest is #1
+                $counter = $sales_result->num_rows; 
+                
                 while ($sale = $sales_result->fetch_assoc()) {
                     $padded_counter = str_pad($counter, 2, '0', STR_PAD_LEFT);
                     $collapse_id = "saleDetails_" . $sale['sale_id'];
@@ -45,13 +47,12 @@
                                 </div>
                                 
                                 <?php
-                                // Check if we found lines for this specific sale in our grouped array
                                 if (isset($sales_lines_grouped[$sale['sale_id']])) {
                                     foreach ($sales_lines_grouped[$sale['sale_id']] as $line) {
                                         $line_total = $line['quantity'] * $line['price_at_sale'];
                                         ?>
                                         <div class="d-flex justify-content-between text-dark mb-1">
-                                            <span class="text-truncate fw-bold" style="width: 50%;" title="<?php echo htmlspecialchars($line['brand_name']); ?>">
+                                            <span class="fw-bold" style="width: 50%; padding-left: 1rem; text-indent: -1rem;">
                                                 <?php echo htmlspecialchars($line['brand_name']); ?>
                                             </span>
                                             <span class="text-muted" style="width: 20%; text-align: center;">x<?php echo $line['quantity']; ?></span>
@@ -68,7 +69,8 @@
                     </div>
                     
                     <?php
-                    $counter++;
+                    // Decrement the counter for the next item
+                    $counter--; 
                 }
             } else {
                 echo '<div class="text-center text-muted small py-4">No sales records logged today.</div>';
