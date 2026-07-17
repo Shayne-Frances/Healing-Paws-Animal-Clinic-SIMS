@@ -96,6 +96,9 @@ if ($sales_result && $sales_result->num_rows > 0) {
         $counter--; 
     }
 } else {
-    echo '<div class="text-center text-muted small py-4">No sales records logged for this date.</div>';
+    echo '<div class="text-center py-5">
+        <img src="assets/images/jujunluffy.png" alt="Walay customeer." style="width: 200px; max-width: 80%; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+        <h4 class="fw-bold text-secondary mt-2">Walay customeer.</h4>
+      </div>';
 }
 ?>
