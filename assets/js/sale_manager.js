@@ -302,6 +302,21 @@ function processCheckout() {
             showToast("Sale completed successfully!", "success");
             cart = {};
             renderPaperBag();
+            
+            // NEW: Automatically open the receipt in a small popup window!
+            if (data.sale_id) {
+                const width = 450;
+                const height = 650;
+                const left = (screen.width - width) / 2;
+                const top = (screen.height - height) / 2;
+                
+                window.open(
+                    `receipt_print.php?sale_id=${data.sale_id}&action=print`, 
+                    'ReceiptPrintWindow', 
+                    `width=${width},height=${height},left=${left},top=${top},scrollbars=yes`
+                );
+            }
+            
             setTimeout(() => window.location.reload(), 1500);
         } else {
             showToast(data.error || "Checkout failed.", "warning");

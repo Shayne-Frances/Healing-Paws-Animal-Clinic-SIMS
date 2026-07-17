@@ -61,7 +61,8 @@ try {
 
     // 3. If we made it here with no errors, Commit the transaction!
     $conn->commit();
-    echo json_encode(['success' => true]);
+    // Pass the newly created sale_id back to JavaScript
+    echo json_encode(['success' => true, 'sale_id' => $sale_id]);
 
 } catch (Exception $e) {
     // If anything failed, undo EVERYTHING
