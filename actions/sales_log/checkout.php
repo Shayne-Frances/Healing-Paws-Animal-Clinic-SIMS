@@ -34,16 +34,17 @@ try {
     $stmt_log->close();
 
     // Prepare our repeatable statements
-    $stmt_line = $conn->prepare("INSERT INTO sales_line (sale_id, product_id, quantity, price_at_sale) VALUES (?, ?, ?, ?)");
+    $stmt_line = $conn->prepare("INSERT INTO sales_line (sale_id, product_id, custom_name, quantity, price_at_sale) VALUES (?, ?, ?, ?, ?)");
     $stmt_stock = $conn->prepare("UPDATE products SET stock_quantity = stock_quantity - ? WHERE product_id = ? AND stock_quantity >= ?");
 
     // 2. Loop through items
     foreach ($cart as $product_id => $item) {
         $qty = $item['qty'];
         $price = $item['price'];
+        $custom_name = $item['name']; // Grab the custom name from the JS cart
 
-        // Insert into sales_line
-        $stmt_line->bind_param("iiid", $sale_id, $product_id, $qty, $price);
+        // Insert into sales_line (Updated bind_param: iisid = int, int, string, int, double)
+        $stmt_line->bind_param("iisid", $sale_id, $product_id, $custom_name, $qty, $price);
         $stmt_line->execute();
 
         // Update Stock (The WHERE clause ensures we don't go negative on the DB level)

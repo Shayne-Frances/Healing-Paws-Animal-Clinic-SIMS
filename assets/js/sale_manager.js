@@ -188,6 +188,12 @@ function updateItemPrice(id, newPrice) {
     }
 }
 
+function updateItemName(id, newName) {
+    if (cart[id]) {
+        cart[id].name = newName.trim() || cart[id].name; // fallback if they leave it blank
+    }
+}
+
 function renderPaperBag() {
     const bagContainer = document.getElementById('paperBagContainer');
     
@@ -216,7 +222,14 @@ function renderPaperBag() {
             ? `<img src="${item.picture}" class="hp-cart-pill-img">` 
             : `<div class="hp-cart-pill-img">🧼</div>`;
 
-        // Check if it's a service to show the editable input
+        // Check if it's a service to show editable name and price inputs
+        const nameBlock = item.isService
+            ? `<input type="text" class="form-control form-control-sm p-1 text-dark fw-bold mb-1 border-primary" 
+                      style="font-size: 0.9rem; height: 26px;" 
+                      value="${item.name}" 
+                      onchange="updateItemName('${id}', this.value)">`
+            : `<h6 class="mb-0 text-truncate fw-bold text-dark" style="font-size: 0.9rem;">${item.name}</h6>`;
+
         const priceBlock = item.isService 
             ? `<div class="d-flex align-items-center mt-1">
                  <span class="text-muted small me-1">₱</span>
@@ -234,8 +247,8 @@ function renderPaperBag() {
                 
                 ${imageBlock}
                 
-                <div class="hp-cart-pill-details">
-                    <h6 class="mb-0 text-truncate fw-bold text-dark" style="font-size: 0.9rem;">${item.name}</h6>
+                <div class="hp-cart-pill-details" style="min-width: 0; flex: 1;">
+                    ${nameBlock}
                     ${priceBlock}
                 </div>
                 

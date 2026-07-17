@@ -17,8 +17,8 @@ if (!$sale_result || $sale_result->num_rows === 0) {
 }
 $sale = $sale_result->fetch_assoc();
 
-// 2. Fetch detailed product lines
-$lines_query = "SELECT sl.quantity, sl.price_at_sale, p.brand_name, p.generic_name, p.size_volume 
+// 2. Fetch detailed product lines (ADDED sl.custom_name)
+$lines_query = "SELECT sl.quantity, sl.price_at_sale, sl.custom_name, p.brand_name, p.generic_name, p.size_volume 
                 FROM sales_line sl
                 JOIN products p ON sl.product_id = p.product_id
                 WHERE sl.sale_id = $sale_id";
@@ -180,7 +180,12 @@ $lines_result = $conn->query($lines_query);
                 $item_total = $line['quantity'] * $line['price_at_sale'];
                 ?>
                 <div class="item-row">
-                    <strong><?php echo htmlspecialchars($line['brand_name']); ?></strong>
+                    <strong>
+                        <?php 
+                            // If custom_name exists and isn't empty, use it. Otherwise, use brand_name.
+                            echo htmlspecialchars(!empty($line['custom_name']) ? $line['custom_name'] : $line['brand_name']); 
+                        ?>
+                    </strong>
                     
                     <?php if (!empty($line['generic_name']) || !empty($line['size_volume'])): ?>
                         <div class="item-details">
