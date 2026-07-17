@@ -1,11 +1,9 @@
 // assets/js/sale_manager.js
-let cart = {}; // Store items: { product_id: { name, price, qty, maxStock, picture } }
+let cart = {}; 
 
 document.addEventListener('click', function(e) {
-    // ONLY execute POS logic if the app is physically in Sale Mode
     if (!document.body.classList.contains('hp-mode-sale')) return;
 
-    // 1. Check if clicking an individual Product Card
     const productCard = e.target.closest('.hp-product-card');
     if (productCard) {
         e.stopPropagation();
@@ -13,7 +11,6 @@ document.addEventListener('click', function(e) {
         return;
     }
 
-    // 2. Check if clicking a Group Card (excluding the toggle arrow)
     const groupCard = e.target.closest('.hp-group-card');
     if (groupCard && !e.target.closest('.hp-dropdown-arrow')) {
         e.stopPropagation();
@@ -21,21 +18,19 @@ document.addEventListener('click', function(e) {
     }
 });
 
-/**
- * Handles adding an individual product to the cart with flight effects
- */
 function handleProductClick(card) {
     const id = card.dataset.id;
     const name = card.dataset.brand;
     const price = parseFloat(card.dataset.price);
     const maxStock = parseInt(card.dataset.stock);
     const picture = card.dataset.picture;
+    const category = card.dataset.category || '';
+    const isService = (category.toLowerCase() === 'service');
     const stockIndicator = document.getElementById(`stock-visual-${id}`);
 
-    // Fetch live quantity currently sitting in our virtual basket
     let currentQtyInCart = cart[id] ? cart[id].qty : 0;
 
-    // Out of Stock Logic check
+    // Standard out of stock check applies to everything (since you'll set service stock to 9999)
     if (maxStock <= 0) {
         showToast(`Warning: ${name} is completely out of stock! Not including this in the paper bag.`, 'warning');
         return;
@@ -46,17 +41,14 @@ function handleProductClick(card) {
         return;
     }
 
-    // Capture starting position for flight animation
     const rect = card.getBoundingClientRect();
     const startX = rect.left + rect.width / 2;
     const startY = rect.top + rect.height / 2;
 
-    // Trigger Fly Animation using the product image or the fallback soap emoji
     const animContent = picture ? `<img src="${picture}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">` : `<span style="font-size: 1.5rem;">🧼</span>`;
     triggerFlightAnimation(startX, startY, animContent, () => {
-        // This callback runs only AFTER the item lands safely inside the bag
         if (!cart[id]) {
-            cart[id] = { name, price, qty: 1, maxStock, picture };
+            cart[id] = { name, price, qty: 1, maxStock, picture, isService };
         } else {
             cart[id].qty += 1;
         }
@@ -64,14 +56,10 @@ function handleProductClick(card) {
         triggerCartBounce();
     });
 
-    // Optimistic UI Update: Instantly decrement visual main-screen counter
     let visualStockLeft = maxStock - (currentQtyInCart + 1);
-    stockIndicator.textContent = visualStockLeft === 0 ? '0 pcs left' : `${visualStockLeft} pcs left`;
+    if(stockIndicator) stockIndicator.textContent = visualStockLeft === 0 ? '0 pcs left' : `${visualStockLeft} pcs left`;
 }
 
-/**
- * Handles bulk-adding nested products with a singular "📦 Package" flight
- */
 function handleGroupBulkAdd(groupCard) {
     const groupId = groupCard.getAttribute('data-group-id');
     const nestedContainer = document.getElementById(`nested-group-${groupId}`);
@@ -85,7 +73,6 @@ function handleGroupBulkAdd(groupCard) {
     let itemsToProcess = [];
     let skippedItems = [];
 
-    // Evaluate which products qualify for inclusion
     nestedProducts.forEach(card => {
         const id = card.dataset.id;
         const name = card.dataset.brand;
@@ -99,7 +86,6 @@ function handleGroupBulkAdd(groupCard) {
         }
     });
 
-    // If everything inside the package is out of stock, drop execution
     if (itemsToProcess.length === 0) {
         if (skippedItems.length > 0) {
             showToast(`Warning: Group items (${skippedItems.join(', ')}) are out of stock!`, 'warning');
@@ -107,32 +93,31 @@ function handleGroupBulkAdd(groupCard) {
         return;
     }
 
-    // Flight Path configuration for the single package container
     const rect = groupCard.getBoundingClientRect();
     const startX = rect.left + rect.width / 2;
     const startY = rect.top + rect.height / 2;
 
     triggerFlightAnimation(startX, startY, `<span style="font-size: 2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));">📦</span>`, () => {
-        // Unpack package contents into the cart database model
         itemsToProcess.forEach(card => {
             const id = card.dataset.id;
             const name = card.dataset.brand;
             const price = parseFloat(card.dataset.price);
             const maxStock = parseInt(card.dataset.stock);
             const picture = card.dataset.picture;
+            const category = card.dataset.category || '';
+            const isService = (category.toLowerCase() === 'service');
             const stockIndicator = document.getElementById(`stock-visual-${id}`);
 
             let currentQtyInCart = cart[id] ? cart[id].qty : 0;
 
             if (!cart[id]) {
-                cart[id] = { name, price, qty: 1, maxStock, picture };
+                cart[id] = { name, price, qty: 1, maxStock, picture, isService };
             } else {
                 cart[id].qty += 1;
             }
 
-            // Sync original card visual trackers
             let visualStockLeft = maxStock - (currentQtyInCart + 1);
-            stockIndicator.textContent = visualStockLeft === 0 ? '0 pcs left' : `${visualStockLeft} pcs left`;
+            if(stockIndicator) stockIndicator.textContent = visualStockLeft === 0 ? '0 pcs left' : `${visualStockLeft} pcs left`;
         });
 
         renderPaperBag();
@@ -146,16 +131,12 @@ function handleGroupBulkAdd(groupCard) {
     });
 }
 
-/**
- * Creates and executes absolute spatial coordinates fly transitions
- */
 function triggerFlightAnimation(startX, startY, htmlContent, callback) {
     const bagElement = document.getElementById('paperBagContainer');
     const bagRect = bagElement.getBoundingClientRect();
     const endX = bagRect.left + bagRect.width / 4;
     const endY = bagRect.top + bagRect.height / 4;
 
-    // Generate flying element clone
     const clone = document.createElement('div');
     clone.className = 'hp-flying-clone';
     clone.innerHTML = htmlContent;
@@ -163,34 +144,26 @@ function triggerFlightAnimation(startX, startY, htmlContent, callback) {
     clone.style.top = `${startY - 20}px`;
     document.body.appendChild(clone);
 
-    // Forces a browser reflow so transition animation works smoothly
     clone.offsetWidth;
 
-    // Launch element towards targets
     clone.style.left = `${endX}px`;
     clone.style.top = `${endY}px`;
     clone.style.transform = 'scale(0.3) rotate(360deg)';
     clone.style.opacity = '0.4';
 
-    // FIX: Using setTimeout instead of transitionend prevents multi-triggering 
-    // from the 4 transitioning properties (left, top, transform, opacity)
     setTimeout(() => {
         clone.remove();
         if (callback) callback();
-    }, 700); // 700ms perfectly matches our 0.7s CSS transition
+    }, 700); 
 }
 
-/**
- * Decrements the visual cart pill, adding back to the main inventory counts
- */
 function removeOneFromCart(id) {
     if (cart[id]) {
         cart[id].qty -= 1;
         
-        // Return visual inventory level back up to main screen indicator
         const stockIndicator = document.getElementById(`stock-visual-${id}`);
         let visualStockLeft = cart[id].maxStock - cart[id].qty;
-        stockIndicator.textContent = `${visualStockLeft} pcs left`;
+        if(stockIndicator) stockIndicator.textContent = `${visualStockLeft} pcs left`;
 
         if (cart[id].qty <= 0) {
             delete cart[id];
@@ -199,9 +172,6 @@ function removeOneFromCart(id) {
     }
 }
 
-/**
- * Cart update physical bounce effect
- */
 function triggerCartBounce() {
     const bagElement = document.getElementById('paperBagContainer');
     bagElement.classList.add('hp-cart-bounce');
@@ -210,9 +180,14 @@ function triggerCartBounce() {
     }, { once: true });
 }
 
-/**
- * Renders the clean medical Pill list UI inside the Paper Bag container
- */
+// NEW: Updates the price dynamically in the cart array and re-renders
+function updateItemPrice(id, newPrice) {
+    if (cart[id]) {
+        cart[id].price = parseFloat(newPrice) || 0;
+        renderPaperBag(); 
+    }
+}
+
 function renderPaperBag() {
     const bagContainer = document.getElementById('paperBagContainer');
     
@@ -237,12 +212,22 @@ function renderPaperBag() {
         const lineTotal = item.price * item.qty;
         grandTotal += lineTotal;
 
-        // Render picture or soap fallback
         const imageBlock = item.picture 
             ? `<img src="${item.picture}" class="hp-cart-pill-img">` 
             : `<div class="hp-cart-pill-img">🧼</div>`;
 
-        // The Pill structure requested
+        // Check if it's a service to show the editable input
+        const priceBlock = item.isService 
+            ? `<div class="d-flex align-items-center mt-1">
+                 <span class="text-muted small me-1">₱</span>
+                 <input type="number" class="form-control form-control-sm p-1 text-success fw-bold border-success" 
+                        style="width: 80px; height: 24px; font-size: 0.85rem;" 
+                        value="${item.price}" 
+                        onchange="updateItemPrice('${id}', this.value)" 
+                        min="0" step="0.01">
+               </div>`
+            : `<span class="text-muted small">₱${item.price.toFixed(2)}</span>`;
+
         html += `
             <div class="hp-cart-pill">
                 <button class="hp-btn-minus" onclick="removeOneFromCart(${id})" title="Remove One">✕</button>
@@ -251,7 +236,7 @@ function renderPaperBag() {
                 
                 <div class="hp-cart-pill-details">
                     <h6 class="mb-0 text-truncate fw-bold text-dark" style="font-size: 0.9rem;">${item.name}</h6>
-                    <span class="text-muted small">₱${item.price.toFixed(2)}</span>
+                    ${priceBlock}
                 </div>
                 
                 <div class="text-end ps-2">
@@ -260,9 +245,8 @@ function renderPaperBag() {
             </div>`;
     }
     
-    html += `</div>`; // Close scrollable item wrapper
+    html += `</div>`; 
     
-    // ADDED: Client, Patient, and Cashier Fields
     html += `
         <div class="bg-light p-2 rounded-3 mb-3 border">
             <div class="mb-2">
@@ -290,21 +274,16 @@ function renderPaperBag() {
     bagContainer.innerHTML = html;
 }
 
-/**
- * Transmit checkout payload securely to actions/checkout.php
- */
 function processCheckout() {
     if (Object.keys(cart).length === 0) {
         showToast("Paper bag is empty!", "warning");
         return;
     }
 
-    // Grab the values from our new inputs
     const clientName = document.getElementById('checkout-client').value || 'Walk-in';
     const patientName = document.getElementById('checkout-patient').value || '';
     const cashierName = document.getElementById('checkout-cashier').value || 'Susan';
 
-    // We restructure the payload so we can send the cart AND the customer info
     const payload = {
         items: cart,
         client: clientName,

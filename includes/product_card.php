@@ -24,7 +24,7 @@ if (!empty($row['picture_link'])) {
      data-id="<?php echo $row['product_id']; ?>"
      data-brand="<?php echo htmlspecialchars($row['brand_name']); ?>"
      data-generic="<?php echo htmlspecialchars($row['generic_name']); ?>"
-     data-category="<?php echo $row['category_id']; ?>"
+     data-category="<?php echo htmlspecialchars($row['category_name']); ?>"
      data-size="<?php echo htmlspecialchars($row['size_volume']); ?>"
      data-price="<?php echo $row['unit_price']; ?>"
      data-stock="<?php echo $row['stock_quantity']; ?>"
