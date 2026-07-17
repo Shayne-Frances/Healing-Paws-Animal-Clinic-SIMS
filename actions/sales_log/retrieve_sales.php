@@ -5,10 +5,13 @@ $selected_date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
 // Secure the date string to prevent SQL injection
 $safe_date = $conn->real_escape_string($selected_date);
 
-// 1. Fetch the main sales log for the selected date
+// 1. Fetch the main sales log for the selected date (ADDED client, patient, cashier)
 $current_date_query = "SELECT sale_id, 
                               DATE_FORMAT(date_sold, '%h:%i %p') AS sale_time, 
-                              total_amount 
+                              total_amount,
+                              client,
+                              patient,
+                              cashier
                        FROM sales_log 
                        WHERE DATE(date_sold) = '$safe_date' 
                        ORDER BY date_sold DESC";

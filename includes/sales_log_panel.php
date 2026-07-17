@@ -51,6 +51,15 @@ $title_text = ($display_date == date('Y-m-d')) ? "Today's Sales" : date('M d, Y'
 
                         <div id="<?php echo $collapse_id; ?>" class="collapse">
                             <div class="p-3 mb-3 mx-2 rounded shadow-sm" style="background-color: var(--light-blue); font-size: 0.85rem;">
+                                
+                                <!-- ADDED: Client and Patient Info -->
+                                <div class="mb-2 pb-2 border-bottom border-secondary-subtle text-dark">
+                                    <div class="mb-1"><span class="text-muted fw-bold">Client:</span> <?php echo htmlspecialchars($sale['client'] ?? 'Walk-in'); ?></div>
+                                    <?php if (!empty($sale['patient'])): ?>
+                                    <div><span class="text-muted fw-bold">Patient/s:</span> <?php echo htmlspecialchars($sale['patient']); ?></div>
+                                    <?php endif; ?>
+                                </div>
+
                                 <div class="d-flex justify-content-between border-bottom border-secondary pb-1 mb-2 fw-bold text-dark-blue font-heading">
                                     <span style="width: 50%;">Brand</span>
                                     <span style="width: 20%; text-align: center;">Qty</span>

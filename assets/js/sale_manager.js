@@ -228,7 +228,7 @@ function renderPaperBag() {
     }
 
     let html = `<h5 class="fw-bold font-heading mb-3">🛍️ Current Sale</h5>`;
-    html += `<div style="max-height: 40vh; overflow-y: auto; padding-right: 5px;">`;
+    html += `<div style="max-height: 35vh; overflow-y: auto; padding-right: 5px; margin-bottom: 10px;">`;
 
     let grandTotal = 0;
 
@@ -262,8 +262,26 @@ function renderPaperBag() {
     
     html += `</div>`; // Close scrollable item wrapper
     
+    // ADDED: Client, Patient, and Cashier Fields
     html += `
-         <div class="d-flex justify-content-between fs-5 fw-bold mt-3 mb-3 border-top pt-2">
+        <div class="bg-light p-2 rounded-3 mb-3 border">
+            <div class="mb-2">
+                <label class="small text-muted fw-bold mb-1">Client Name</label>
+                <input type="text" id="checkout-client" class="form-control form-control-sm" value="Walk-in">
+            </div>
+            <div class="mb-2">
+                <label class="small text-muted fw-bold mb-1">Patient Name/s</label>
+                <input type="text" id="checkout-patient" class="form-control form-control-sm" placeholder="Optional">
+            </div>
+            <div>
+                <label class="small text-muted fw-bold mb-1">Cashier</label>
+                <input type="text" id="checkout-cashier" class="form-control form-control-sm" value="Susan">
+            </div>
+        </div>
+    `;
+
+    html += `
+         <div class="d-flex justify-content-between fs-5 fw-bold mb-3 pt-2">
              <span class="font-heading">Total:</span>
              <span class="text-success">₱${grandTotal.toFixed(2)}</span>
          </div>
@@ -281,10 +299,23 @@ function processCheckout() {
         return;
     }
 
+    // Grab the values from our new inputs
+    const clientName = document.getElementById('checkout-client').value || 'Walk-in';
+    const patientName = document.getElementById('checkout-patient').value || '';
+    const cashierName = document.getElementById('checkout-cashier').value || 'Susan';
+
+    // We restructure the payload so we can send the cart AND the customer info
+    const payload = {
+        items: cart,
+        client: clientName,
+        patient: patientName,
+        cashier: cashierName
+    };
+
     fetch('actions/sales_log/checkout.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cart)
+        body: JSON.stringify(payload)
     })
     .then(response => response.json())
     .then(data => {
@@ -292,7 +323,7 @@ function processCheckout() {
             showToast("Sale completed successfully!", "success");
             cart = {};
             renderPaperBag();
-            setTimeout(() => window.location.reload(), 1500); // Reload to sync DB stock levels with frontend elements
+            setTimeout(() => window.location.reload(), 1500);
         } else {
             showToast(data.error || "Checkout failed.", "warning");
         }

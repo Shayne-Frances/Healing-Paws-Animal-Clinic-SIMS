@@ -9,8 +9,8 @@ if ($sale_id === 0) {
     die("Invalid Sale ID.");
 }
 
-// 1. Fetch main sale details
-$sale_query = "SELECT sale_id, total_amount, date_sold FROM sales_log WHERE sale_id = $sale_id";
+// 1. Fetch main sale details (ADDED client, patient, cashier)
+$sale_query = "SELECT sale_id, total_amount, date_sold, client, patient, cashier FROM sales_log WHERE sale_id = $sale_id";
 $sale_result = $conn->query($sale_query);
 if (!$sale_result || $sale_result->num_rows === 0) {
     die("Sale record not found.");
@@ -33,7 +33,7 @@ $lines_result = $conn->query($lines_query);
         /* Base Thermal Styling (Formatted for standard 80mm paper) */
         * {
             box-sizing: border-box;
-            font-family: 'Courier New', Courier, monospace; /* Clean mono-spacing like cash registers */
+            font-family: 'Courier New', Courier, monospace;
             color: #000;
         }
         body {
@@ -97,7 +97,7 @@ $lines_result = $conn->query($lines_query);
         .meta-info {
             font-size: 0.8rem;
             margin-bottom: 12px;
-            line-height: 1.3;
+            line-height: 1.4;
         }
 
         /* Items Layout */
@@ -153,6 +153,22 @@ $lines_result = $conn->query($lines_query);
     <div class="meta-info">
         <div><strong>Transaction #:</strong> <?php echo str_pad($sale['sale_id'], 6, '0', STR_PAD_LEFT); ?></div>
         <div><strong>Date:</strong> <?php echo date('M d, Y h:i A', strtotime($sale['date_sold'])); ?></div>
+        <div><strong>Cashier:</strong> <?php echo htmlspecialchars($sale['cashier'] ?? 'Susan'); ?></div>
+        
+        <!-- ADDED: Client - Patient Formatting -->
+        <div style="margin-top: 6px;">
+            <strong>Customer:</strong> 
+            <?php 
+                $client = htmlspecialchars($sale['client'] ?? 'Walk-in');
+                $patient = htmlspecialchars($sale['patient'] ?? '');
+                
+                if (!empty($patient)) {
+                    echo $client . ' - ' . $patient;
+                } else {
+                    echo $client;
+                }
+            ?>
+        </div>
     </div>
 
     <div class="separator"></div>

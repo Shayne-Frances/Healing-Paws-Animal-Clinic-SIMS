@@ -3,7 +3,13 @@
 header('Content-Type: application/json');
 include __DIR__ . '/../../includes/db.php';
 
-$cart = json_decode(file_get_contents('php://input'), true);
+$payload = json_decode(file_get_contents('php://input'), true);
+
+// Extract the items array and the new info
+$cart = $payload['items'] ?? [];
+$client = $payload['client'] ?? 'Walk-in';
+$patient = $payload['patient'] ?? null; // Nullable
+$cashier = $payload['cashier'] ?? 'Susan';
 
 if (empty($cart)) {
     echo json_encode(['success' => false, 'error' => 'Cart is empty']);
@@ -20,9 +26,9 @@ foreach ($cart as $item) {
 $conn->begin_transaction();
 
 try {
-    // 1. Insert into sales_log (The Paper Bag)
-    $stmt_log = $conn->prepare("INSERT INTO sales_log (total_amount) VALUES (?)");
-    $stmt_log->bind_param("d", $grand_total);
+    // 1. Insert into sales_log with the new columns included
+    $stmt_log = $conn->prepare("INSERT INTO sales_log (total_amount, client, patient, cashier) VALUES (?, ?, ?, ?)");
+    $stmt_log->bind_param("dsss", $grand_total, $client, $patient, $cashier);
     $stmt_log->execute();
     $sale_id = $conn->insert_id;
     $stmt_log->close();
