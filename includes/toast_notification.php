@@ -1,5 +1,5 @@
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 9999; margin-top: 20px;">
-    <div id="clinicToast" class="toast align-items-center border-0 shadow-lg rounded-4" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 350px;">
+    <div id="clinicToast" class="toast align-items-center border-0 shadow-lg rounded-4" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 500px;">
         <div class="d-flex p-2">
             <div class="toast-body d-flex align-items-center fw-semibold fs-6 text-dark">
                 <div class="me-3 fs-3 d-flex align-items-center justify-content-center rounded-circle bg-white shadow-sm" style="width: 40px; height: 40px;" id="toastIconContainer">
@@ -43,7 +43,7 @@ function showToast(message, type = 'warning') {
         iconContainer.classList.add('text-success');
     }
     
-    const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+    const toast = new bootstrap.Toast(toastEl, { delay: 15000 });
     toast.show();
 }
 </script>
